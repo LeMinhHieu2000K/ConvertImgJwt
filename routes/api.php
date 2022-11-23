@@ -22,7 +22,7 @@ Route::get("logout", [ImgController::class, "getLogout"]);
 
 Route::post('upload' , [ImgController::class, "postUploadImg"]);
 
-Route::get('imageData' , [ImgController::class, "getImageData"]);
+Route::get('image-data' , [ImgController::class, "getImageData"]);
 
 Route::post('convert' , [ImgController::class, "convertImageData"]);
 
