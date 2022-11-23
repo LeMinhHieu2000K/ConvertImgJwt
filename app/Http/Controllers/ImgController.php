@@ -43,16 +43,16 @@ class ImgController extends Controller
             }
         );
         return response()->json([
-            "status"=>1,
-            "message"=> "user registered successfully"
-        ],200);
+            "status" => 1,
+            "message" => "user registered successfully"
+        ], 200);
     }
 
-   
+
     public function postLogin(Request $request)
     {
-         // validation
-         $request->validate([
+        // validation
+        $request->validate([
             "email" => "required|email",
             "password" => "required"
         ]);
@@ -88,30 +88,36 @@ class ImgController extends Controller
 
     public function postUploadImg(Request $request)
     {
-        if ($request->hasFile('files')) {
-            $files = $request->file('files');
-            foreach ($files as $file) {
-                $filename = $file->getClientOriginalName();
-                $extension = $file->getClientOriginalExtension();
-                $size = $file->getSize();
-                // cho vào file 
-                $file->move('source/image', $filename);
-                // khởi tạo đối tượng ảnh
-                $imgData = new Img();
-                $imgData->image = $filename;
-                $imgData->extension = $extension;
-                $imgData->size = $size;
-                $imgData->formatSize = $this->formatSizeUnits($size);
+        if (isset(Auth::user()->id)) {
+            if ($request->hasFile('files')) {
+                $files = $request->file('files');
+                foreach ($files as $file) {
+                    $filename = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+                    $size = $file->getSize();
+                    // cho vào file 
+                    $file->move('source/image', $filename);
+                    // khởi tạo đối tượng ảnh
+                    $imgData = new Img();
+                    $imgData->image = $filename;
+                    $imgData->extension = $extension;
+                    $imgData->size = $size;
+                    $imgData->formatSize = $this->formatSizeUnits($size);
 
-                $imgData->save();
+                    $imgData->save();
+                }
+                return response()->json([
+                    "status" => 200,
+                    "message" => "Upload successfully"
+                ]);
+            } else {
+                return response()->json([
+                    "message" => "ko có file"
+                ]);
             }
-            return response()->json([
-                "status" => 200,
-                "message" => "Upload successfully"
-            ]);
         } else {
             return response()->json([
-                "message" => "ko có file"
+                "message" => "Bạn chưa đăng nhập"
             ]);
         }
     }
@@ -160,7 +166,7 @@ class ImgController extends Controller
             $date = getdate();
             $ngay = $date['mday'] . $date['mon'] . $date['year'];
             $only_name = basename($image, '.' . $typeOriginal[$i]);
-            $only_name1 = $only_name.'_'.$ngay.'_'.$i;
+            $only_name1 = $only_name . '_' . $ngay . '_' . $i;
 
             if ($typeTarget[$i] == 'gif') {
                 $binary = imagecreatefromstring(file_get_contents($image));
