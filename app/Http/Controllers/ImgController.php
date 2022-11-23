@@ -85,7 +85,6 @@ class ImgController extends Controller
         ]);
     }
 
-
     public function postUploadImg(Request $request)
     {
 
@@ -143,17 +142,16 @@ class ImgController extends Controller
     {
         $request->validate([
             "typecanchuyen" => "required",
-            "name_img" => "required",
-            "type_img" => "required",
-            "id_img" => "required",
+            "id_img" => "required"
 
         ]);
-        $Img = Img::where('id',$request->id_img)->get();
-        foreach($Img as $item)
-        {
-            $nameImg = $item->name_img; // tên ban đầu
-            $typeOriginal = $item->type_img; // kiểu ban đầu
+        $id_img = $request->id_img;
+        for ($m = 0; $m < count($id_img); $m++) {
+            $Img = Img::where('id', $id_img[$m])->first();
+            $nameImg = $Img->image; // tên ban đầu
+            $typeOriginal =  $Img->extension; // kiểu ban đầu
         }
+
         $typeTarget = $request->typecanchuyen; // kiểu cần chuyển
         $count = 0;
         $idImg = $request->id_img;
@@ -161,14 +159,14 @@ class ImgController extends Controller
             $count++;
         }
 
-        for ($i = 0; $i < $count; $i++) // lap ten ban dau
+        for ($i = 0; $i < $count; $i++)
         {
-            $nameImg[$i];
-            $typeOriginal[$i];
+            $nameImg;
+            $typeOriginal;
             $typeTarget[$i];
             $dir = 'source/image/'; // đường dẫn ban đầu
             $target_dir = "source/convert/"; // đường dẫn lưu trữ ảnh đã convert
-            $image = $dir . $nameImg[$i]; // tạo ảnh
+            $image = $dir . $nameImg; // tạo ảnh
             $date = getdate();
             $ngay = $date['mday'] . $date['mon'] . $date['year'];
             $only_name = basename($image, '.' . $typeOriginal[$i]);
