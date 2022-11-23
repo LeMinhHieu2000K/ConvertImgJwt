@@ -88,36 +88,31 @@ class ImgController extends Controller
 
     public function postUploadImg(Request $request)
     {
-        if (isset(Auth::user()->id)) {
-            if ($request->hasFile('files')) {
-                $files = $request->file('files');
-                foreach ($files as $file) {
-                    $filename = $file->getClientOriginalName();
-                    $extension = $file->getClientOriginalExtension();
-                    $size = $file->getSize();
-                    // cho vào file 
-                    $file->move('source/image', $filename);
-                    // khởi tạo đối tượng ảnh
-                    $imgData = new Img();
-                    $imgData->image = $filename;
-                    $imgData->extension = $extension;
-                    $imgData->size = $size;
-                    $imgData->formatSize = $this->formatSizeUnits($size);
 
-                    $imgData->save();
-                }
-                return response()->json([
-                    "status" => 200,
-                    "message" => "Upload successfully"
-                ]);
-            } else {
-                return response()->json([
-                    "message" => "ko có file"
-                ]);
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+            foreach ($files as $file) {
+                $filename = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $size = $file->getSize();
+                // cho vào file 
+                $file->move('source/image', $filename);
+                // khởi tạo đối tượng ảnh
+                $imgData = new Img();
+                $imgData->image = $filename;
+                $imgData->extension = $extension;
+                $imgData->size = $size;
+                $imgData->formatSize = $this->formatSizeUnits($size);
+
+                $imgData->save();
             }
+            return response()->json([
+                "status" => 200,
+                "message" => "Upload successfully"
+            ]);
         } else {
             return response()->json([
-                "message" => "Bạn chưa đăng nhập"
+                "message" => "ko có file"
             ]);
         }
     }
