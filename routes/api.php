@@ -20,13 +20,13 @@ Route::post("login", [ImgController::class, "postLogin"]);
 
 Route::get("logout", [ImgController::class, "getLogout"]);
 
-Route::post('Upload' , [ImgController::class, "postUploadImg"]);
+Route::post('upload' , [ImgController::class, "postUploadImg"]);
 
-Route::get('ImageData' , [ImgController::class, "getImageData"]);
+Route::get('imageData' , [ImgController::class, "getImageData"]);
 
 Route::post('convert' , [ImgController::class, "convertImageData"]);
 
-Route::get('taixuong' , [ImgController::class, "download_img"]);
+Route::get('download' , [ImgController::class, "download_img"]);
 
 Route::delete('delete/{id}',[ImgController::class, "getImageData"] );
 
