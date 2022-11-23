@@ -146,11 +146,15 @@ class ImgController extends Controller
             "name_img" => "required",
             "type_img" => "required",
             "id_img" => "required",
-            
+
         ]);
+        $Img = Img::where('id',$request->id_img)->get();
+        foreach($Img as $item)
+        {
+            $nameImg = $item->name_img; // tên ban đầu
+            $typeOriginal = $item->type_img; // kiểu ban đầu
+        }
         $typeTarget = $request->typecanchuyen; // kiểu cần chuyển
-        $nameImg = $request->name_img; // tên ban đầu
-        $typeOriginal = $request->type_img; // kiểu ban đầu
         $count = 0;
         $idImg = $request->id_img;
         foreach ($idImg as $id) {
