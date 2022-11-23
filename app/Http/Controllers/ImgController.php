@@ -143,33 +143,22 @@ class ImgController extends Controller
         $request->validate([
             "typecanchuyen" => "required",
             "id_img" => "required"
-
         ]);
         $id_img = $request->id_img;
-        for ($m = 0; $m < count($id_img); $m++) {
-            $Img = Img::where('id', $id_img[$m])->first();
-            $nameImg = $Img->image; // tên ban đầu
-            $typeOriginal =  $Img->extension; // kiểu ban đầu
-        }
+        $typeTarget = $request->typecanchuyen;
 
-        $typeTarget = $request->typecanchuyen; // kiểu cần chuyển
-        $count = 0;
-        $idImg = $request->id_img;
-        foreach ($idImg as $id) {
-            $count++;
-        }
+        $i = 0;
+        foreach ($id_img as $id) {
+            $img = Img::where('id', $id)->first();
+            $nameImg = $img->image;
+            $typeOriginal =  $img->extension;
 
-        for ($i = 0; $i < $count; $i++)
-        {
-            $nameImg;
-            $typeOriginal;
-            $typeTarget[$i];
-            $dir = 'source/image/'; // đường dẫn ban đầu
+            $dir = 'source/image/';
             $target_dir = "source/convert/"; // đường dẫn lưu trữ ảnh đã convert
             $image = $dir . $nameImg; // tạo ảnh
             $date = getdate();
             $ngay = $date['mday'] . $date['mon'] . $date['year'];
-            $only_name = basename($image, '.' . $typeOriginal[$i]);
+            $only_name = basename($image, '.' . $typeOriginal);
             $only_name1 = $only_name . '_' . $ngay . '_' . $i;
 
             if ($typeTarget[$i] == 'gif') {
@@ -234,6 +223,8 @@ class ImgController extends Controller
                 imagejpeg($content, $output);
                 imagedestroy($content);
             }
+
+            $i++;
         }
 
         $file_names = glob("source/convert/*");
@@ -262,11 +253,11 @@ class ImgController extends Controller
         $ImgAfter = ImgAfter::all();
 
         // XÓA DỮ LIỆU BẢNG img và img After
-        $idImg = $request->id_img; // id ảnh
-        foreach ($idImg as $id) {
-            $delete_Img = Img::where('id', $id)->delete();
-            $delete_ImgAfter = ImgAfter::where('id_img', $id)->delete();
-        }
+        // $idImg = $request->id_img; // id ảnh
+        // foreach ($idImg as $id) {
+        //     $delete_Img = Img::where('id', $id)->delete();
+        //     $delete_ImgAfter = ImgAfter::where('id_img', $id)->delete();
+        // }
         return response()->json([
             "status" => 200,
             "message" => "Data Img converted successfully",
