@@ -18,9 +18,7 @@ class ImgController extends Controller
             "name" => "required",
             "email" => "required|email|unique:users",
             "phone" => "required",
-            "password" => "required|confirm",
-            'password' => 'required|min:6|confirmed',
-            'password_confirmation' => 'required|min:6',
+            "password" => "required|confirmed",
             "role" => "required"
 
         ]);
