@@ -70,8 +70,8 @@ class ImgController extends Controller
         return response()->json([
             "status" => 200,
             "message" => "Logged in successfully",
-            "access_token" => $token,
-            "role" =>  Auth::user()->role
+            "access_token" => $token
+
         ]);
     }
 
