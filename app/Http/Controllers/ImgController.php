@@ -141,6 +141,13 @@ class ImgController extends Controller
 
     public function convertImageData(Request $request, $image_quality = 100)
     {
+        $request->validate([
+            "typecanchuyen" => "required",
+            "name_img" => "required",
+            "type_img" => "required",
+            "id_img" => "required",
+            
+        ]);
         $typeTarget = $request->typecanchuyen; // kiểu cần chuyển
         $nameImg = $request->name_img; // tên ban đầu
         $typeOriginal = $request->type_img; // kiểu ban đầu
