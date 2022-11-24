@@ -20,6 +20,8 @@ Route::post("register", [ImgController::class, "postRegister"]);
 Route::post("login", [ImgController::class, "postLogin"]);
 
 Route::group(["middleware" => ["auth:api"]], function () {
+
+    Route::get("profile-user-login", [ImgController::class, "getProfile"]);
     
     Route::get("logout", [ImgController::class, "getLogout"]);
 
