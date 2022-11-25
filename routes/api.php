@@ -3,7 +3,7 @@
 use App\Http\Controllers\ImgController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AuthOtpController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -20,6 +20,10 @@ Route::post("register", [ImgController::class, "postRegister"]);
 Route::post("login", [ImgController::class, "postLogin"]);
 
 Route::group(["middleware" => ["auth:api"]], function () {
+
+    Route::get("profile-user-login", [ImgController::class, "getProfile"]);
+
+    Route::get("myFile", [ImgController::class, "getmyFile"])->name('myFile');
     
     Route::get("logout", [ImgController::class, "getLogout"]);
 
@@ -32,10 +36,17 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::get('download', [ImgController::class, "download_img"]);
 
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
+
+    // OTP
+    Route::post('otp-generate', [AuthOtpController::class, "generate"])->name('otp.generate');
+    Route::get('otp-verification/{user_id}', [AuthOtpController::class, "verification"])->name('otp.verification');
+    Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');
+
+    Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);
+    Route::post('remove-background' ,  [ImgController::class, "postRemoveBackground"]);
+
+
 });
-
-
-
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

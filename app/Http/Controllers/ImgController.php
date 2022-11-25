@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Img;
 use App\Models\ImgAfter;
+use App\Models\ImgClient;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use ZipArchive;
+use Image;
 
 class ImgController extends Controller
 {
@@ -43,8 +45,17 @@ class ImgController extends Controller
             }
         );
         return response()->json([
-            "status" => 1,
+            "status" => 200,
             "message" => "user registered successfully"
+        ], 200);
+    }
+
+    public function getmyFile()
+    {
+        $ImgClient = ImgClient::where('user_id', Auth::user()->id)->get();
+        return response()->json([
+            "status" => 200,
+            "data" => $ImgClient
         ], 200);
     }
 
@@ -72,6 +83,17 @@ class ImgController extends Controller
             "message" => "Logged in successfully",
             "access_token" => $token
 
+        ]);
+    }
+
+    public function getProfile()
+    {
+        $userLogin = User::where('id', Auth::user()->id)->first();
+        // send response
+        return response()->json([
+            "status" => 200,
+            "message" => "Get data successfully",
+            "data" => $userLogin
         ]);
     }
 
@@ -143,27 +165,42 @@ class ImgController extends Controller
         $request->validate([
             "typecanchuyen" => "required",
             "id_img" => "required"
+
         ]);
         $id_img = $request->id_img;
-        $typeTarget = $request->typecanchuyen;
+        for ($m = 0; $m < count($id_img); $m++) {
+            $Img = Img::where('id', $id_img[$m])->first();
+            $nameImg = $Img->image; // tên ban đầu
+            $typeOriginal =  $Img->extension; // kiểu ban đầu
+        }
 
-        $i = 0;
-        foreach ($id_img as $id) {
-            $img = Img::where('id', $id)->first();
-            $nameImg = $img->image;
-            $typeOriginal =  $img->extension;
+        $typeTarget = $request->typecanchuyen; // kiểu cần chuyển
+        $count = 0;
+        $idImg = $request->id_img;
+        foreach ($idImg as $id) {
+            $count++;
+        }
 
-            $dir = 'source/image/';
+        for ($i = 0; $i < $count; $i++)
+        {
+            $nameImg;
+            $typeOriginal;
+            $typeTarget[$i];
+            $dir = 'source/image/'; // đường dẫn ban đầu
             $target_dir = "source/convert/"; // đường dẫn lưu trữ ảnh đã convert
-            $image = $dir . $nameImg; // tạo ảnh
+            $image = $dir . $nameImg[$i]; // tạo ảnh
             $date = getdate();
             $ngay = $date['mday'] . $date['mon'] . $date['year'];
             $only_name = basename($image, '.' . $typeOriginal);
             $only_name1 = $only_name . '_' . $ngay . '_' . $i;
+            $ImgClient_dir = 'source/ImgClient/';
+            $imgClient = $ImgClient_dir . $nameImg[$i];
 
             if ($typeTarget[$i] == 'gif') {
                 $binary = imagecreatefromstring(file_get_contents($image));
+                $binarySecond = imagecreatefromstring(file_get_contents($image));
                 imageGif($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
+                imageGif($binarySecond, $ImgClient_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                 $ten_moi = $only_name1 . '.' . $typeTarget[$i];
 
                 ob_start(); //Tạo một bộ đệm đầu ra mới và thêm nó vào đầu ngăn xếp.
@@ -175,11 +212,23 @@ class ImgController extends Controller
                 $output = $target_dir . $ten_moi;
                 imagegif($content, $output);
                 imagedestroy($content);
+
+                ob_start(); //Tạo một bộ đệm đầu ra mới và thêm nó vào đầu ngăn xếp.
+                imagegif($binarySecond, NULL, 100);
+                $cont = ob_get_contents(); //  Trả về nội dung của bộ đệm đầu ra trên cùng.
+                ob_end_clean(); // - Trả về tất cả nội dung của bộ đệm đầu ra trên cùng & xóa nội dung khỏi bộ đệm.
+                imagedestroy($binarySecond);
+                $content = imagecreatefromstring($cont);
+                $output = $ImgClient_dir . $ten_moi;
+                imagegif($content, $output);
+                imagedestroy($content);
             }
 
             if ($typeTarget[$i] == 'webp') {
                 $binary = imagecreatefromstring(file_get_contents($image));
+                $binarySecond = imagecreatefromstring(file_get_contents($image));
                 imagewebp($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
+                imagewebp($binarySecond, $ImgClient_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                 $ten_moi = $only_name1 . '.' . $typeTarget[$i];
 
                 ob_start(); //Tạo một bộ đệm đầu ra mới và thêm nó vào đầu ngăn xếp.
@@ -191,10 +240,22 @@ class ImgController extends Controller
                 $output = $target_dir . $ten_moi;
                 imagewebp($content, $output);
                 imagedestroy($content);
+
+                ob_start(); //Tạo một bộ đệm đầu ra mới và thêm nó vào đầu ngăn xếp.
+                imagewebp($binarySecond, NULL, 100);
+                $cont = ob_get_contents(); //  Trả về nội dung của bộ đệm đầu ra trên cùng.
+                ob_end_clean(); // - Trả về tất cả nội dung của bộ đệm đầu ra trên cùng & xóa nội dung khỏi bộ đệm.
+                imagedestroy($binarySecond);
+                $content = imagecreatefromstring($cont);
+                $output = $ImgClient_dir . $ten_moi;
+                imagewebp($content, $output);
+                imagedestroy($content);
             }
             if ($typeTarget[$i] == 'png') {
                 $binary = imagecreatefromstring(file_get_contents($image));
+                $binarySecond = imagecreatefromstring(file_get_contents($image));
                 imagepng($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
+                imagepng($binarySecond, $ImgClient_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                 $ten_moi = $only_name1 . '.' . $typeTarget[$i];
 
                 ob_start();
@@ -206,11 +267,23 @@ class ImgController extends Controller
                 $output = $target_dir . $ten_moi;
                 imagepng($content, $output);
                 imagedestroy($content);
+
+                ob_start();
+                imagepng($$binarySecond, NULL, 100);
+                $cont = ob_get_contents();
+                ob_end_clean();
+                imagedestroy($binarySecond);
+                $content = imagecreatefromstring($cont);
+                $output = $ImgClient_dir . $ten_moi;
+                imagepng($content, $output);
+                imagedestroy($content);
             }
 
             if ($typeTarget[$i] == 'jpg') {
                 $binary = imagecreatefromstring(file_get_contents($image));
+                $binarySecond = imagecreatefromstring(file_get_contents($image));
                 imagejpeg($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
+                imagejpeg($binarySecond, $ImgClient_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                 $ten_moi = $only_name1 . '.' . $typeTarget[$i];
 
                 ob_start();
@@ -220,6 +293,16 @@ class ImgController extends Controller
                 imagedestroy($binary);
                 $content = imagecreatefromstring($cont);
                 $output = $target_dir . $ten_moi;
+                imagejpeg($content, $output);
+                imagedestroy($content);
+
+                ob_start();
+                imagejpeg($binarySecond, NULL, 100);
+                $cont = ob_get_contents();
+                ob_end_clean();
+                imagedestroy($binarySecond);
+                $content = imagecreatefromstring($cont);
+                $output = $ImgClient_dir . $ten_moi;
                 imagejpeg($content, $output);
                 imagedestroy($content);
             }
@@ -249,6 +332,12 @@ class ImgController extends Controller
             $ImgAfter->formatSizeAfter = $this->formatSizeUnits($size);
             $ImgAfter->decleare = $decleare;
             $ImgAfter->save();
+
+            $ImgClient = new ImgClient();
+            $ImgClient->user_id = Auth::user()->id;
+            $ImgClient->image = $newName;
+            $ImgClient->size = $this->formatSizeUnits($size);
+            $ImgClient->save();
         }
         $ImgAfter = ImgAfter::all();
 
@@ -265,6 +354,90 @@ class ImgController extends Controller
         ]);
     }
 
+    // chức năng mở rộng : thumbnail , banner , xóa nền, resize
+    public function postCreateThumbnail(Request $request)
+    {
+        if ($request->hasFile('profile_image')) {
+            //get filename with extension
+            $filenamewithextension = $request->file('profile_image')->getClientOriginalName();
+
+            //get filename without extension
+            $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+
+            //get file extension
+            $extension = $request->file('profile_image')->getClientOriginalExtension();
+
+            //filename to store
+            $filenametostore = $filename . '_' . time() . '.' . $extension;
+
+            //small thumbnail name
+            $smallthumbnail = $filename . '_small_' . time() . '.' . $extension;
+
+            //medium thumbnail name
+            $mediumthumbnail = $filename . '_medium_' . time() . '.' . $extension;
+
+            //large thumbnail name
+            $largethumbnail = $filename . '_large_' . time() . '.' . $extension;
+
+            //Upload File
+            $request->file('profile_image')->storeAs('public/profile_images', $filenametostore);
+            $request->file('profile_image')->storeAs('public/profile_images/thumbnail', $smallthumbnail);
+            $request->file('profile_image')->storeAs('public/profile_images/thumbnail', $mediumthumbnail);
+            $request->file('profile_image')->storeAs('public/profile_images/thumbnail', $largethumbnail);
+
+            //create small thumbnail
+            $smallthumbnailpath = public_path('storage/profile_images/thumbnail/' . $smallthumbnail);
+            $this->createThumbnail($smallthumbnailpath, 150, 93);
+
+            //create medium thumbnail
+            $mediumthumbnailpath = public_path('storage/profile_images/thumbnail/' . $mediumthumbnail);
+            $this->createThumbnail($mediumthumbnailpath, 300, 185);
+
+            //create large thumbnail
+            $largethumbnailpath = public_path('storage/profile_images/thumbnail/' . $largethumbnail);
+            $this->createThumbnail($largethumbnailpath, 550, 340);
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Thumbnail created successfully",
+            ]);
+        }
+    }
+    public function createThumbnail($path, $width, $height)
+    {
+        $img = Image::make($path)->resize($width, $height, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+        $img->save($path);
+    }
+    // xóa nền
+    public function postRemoveBackground(Request $request)
+    {
+        if(isset($_POST['submit'])){
+            $rand=rand(111111111,999999999);
+            move_uploaded_file($_FILES['file']['tmp_name'],'upload/'.$rand.$_FILES['file']['name']);
+            $file="upload/".$rand.$_FILES['file']['name'];
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://api.remove.bg/v1.0/removebg');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            $post = array(
+                'image_url' => $file,
+                'size' => 'auto'
+            );
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+            $headers = array();
+            $headers[] = 'X-Api-Key: SViJniNnLybr3tCSNW9Lrevg';
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            $fp=fopen('remove/'.$rand.'.png',"wb");
+            fwrite($fp,$result);
+            fclose($fp);
+            echo "<img src='remove/$rand.png'>";
+        }
+    }
     public function download_img(Request $request)
     {
         $date = getdate();
