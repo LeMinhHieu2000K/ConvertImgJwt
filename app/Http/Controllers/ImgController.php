@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Img;
 use App\Models\ImgAfter;
 use App\Models\ImgClient;
+use App\Models\DuckImage;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use ZipArchive;
-use Image;
+// use Image;
 
 class ImgController extends Controller
 {
@@ -436,5 +438,105 @@ class ImgController extends Controller
             $bytes = '0 bytes';
         }
         return $bytes;
+    }
+
+    // Nhánh duck
+    // Convert ảnh
+    function convertImage(Request $request, $image_quality = 100)
+    {
+        $request->validate([
+            "typeImage" => "required"
+        ]);
+        $imageConvertedId = []; // array image convert id
+        if ($request->hasFile('files')) {
+            // get request data
+            $files = $request->file('files');
+            $typeTarget = $request->typeImage;
+
+            $target_dir = "source/convert/" . Auth::user()->id . "/"; // đường dẫn lưu trữ ảnh đã convert
+
+            // get current date
+            $date = getdate();
+            $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
+    
+            for ($i = 0; $i < count($files); $i++)
+            {
+                // file input name and extension
+                $fileName = $files[$i]->getClientOriginalName();
+                $extension = $files[$i]->getClientOriginalExtension();
+                $size = $files[$i]->getSize();
+
+                // create converted image's name
+                $fileOriginName = basename($fileName, '.' . $extension);
+                $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
+
+                // start covert image
+                $binary = imagecreatefromstring(file_get_contents($files[$i]));
+                $newName = $only_name1 . '.' . $typeTarget[$i];
+
+                ob_start(); //Tạo một bộ đệm đầu ra mới và thêm nó vào đầu ngăn xếp.
+
+                // convert image
+                switch ($typeTarget[$i]) {
+                    case "webp":
+                        imagewebp($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);    
+                        imagewebp($binary, NULL, 100);
+                      break;
+                    case "gif":
+                        imagegif($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i]);
+                        imagegif($binary, NULL);
+                      break;
+                    case "png":
+                        imagepng($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i]);  
+                        imagepng($binary, NULL);
+                      break;
+                    default: //jpeg
+                        imagejpeg($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);   
+                        imagejpeg($binary, NULL, 100);
+                }
+
+                $cont = ob_get_contents(); //  Trả về nội dung của bộ đệm đầu ra trên cùng.
+                ob_end_clean(); // - Trả về tất cả nội dung của bộ đệm đầu ra trên cùng & xóa nội dung khỏi bộ đệm.
+                imagedestroy($binary);
+                $content = imagecreatefromstring($cont);
+                $output = $target_dir . $newName;
+
+                switch ($typeTarget[$i]) {
+                    case "webp":
+                        imagewebp($content, $output);
+                      break;
+                    case "gif":
+                        imagegif($content, $output);
+                      break;
+                    case "png":
+                        imagepng($content, $output);
+                      break;
+                    default: //jpeg
+                        imagejpeg($content, $output);
+                }
+                imagedestroy($content);
+
+                // Save image info to database
+                $duckImage = new DuckImage();
+                $duckImage->name = $newName;
+                $duckImage->user_id = Auth::user()->id;
+                $duckImage->size_before = $size;
+                $duckImage->size_after = filesize($output);
+                $duckImage->save();
+
+                array_push($imageConvertedId, $duckImage);
+            }
+    
+            return response()->json([
+                "status" => 200,
+                "message" => "Data Img converted successfully",
+                "data" => $imageConvertedId
+            ]);
+        } else {
+            return response()->json([
+                "status" => 406,
+                "message" => "Cannot find File(s) uploaded"
+            ], 406);
+        }
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use \Illuminate\Support\Facades\File;
+use App\Models\ImgClient;
 use App\Models\User;
 
 class UserController extends Controller
@@ -38,6 +40,9 @@ class UserController extends Controller
         //         $email->to($emailTarget);
         //     }
         // );
+
+        $path = public_path().'/source/convert/' . $user->id;
+        File::makeDirectory($path, 0777, true, true);
 
         return response()->json([
             "status" => 200,

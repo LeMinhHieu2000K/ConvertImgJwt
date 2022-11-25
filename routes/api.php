@@ -32,7 +32,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::get('image-data', [ImgController::class, "getImageData"]);
 
-    Route::post('convert', [ImgController::class, "convertImageData"]);
+    Route::post('convert', [ImgController::class, "convertImage"]);
 
     Route::get('download', [ImgController::class, "download_img"]);
 
