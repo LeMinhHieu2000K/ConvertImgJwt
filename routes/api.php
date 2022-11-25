@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ImgController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthOtpController;
@@ -15,17 +16,17 @@ use App\Http\Controllers\AuthOtpController;
 |
 */
 
-Route::post("register", [ImgController::class, "postRegister"]);
+Route::post("register", [UserController::class, "postRegister"]);
 
-Route::post("login", [ImgController::class, "postLogin"]);
+Route::post("login", [UserController::class, "postLogin"]);
 
 Route::group(["middleware" => ["auth:api"]], function () {
 
-    Route::get("profile-user-login", [ImgController::class, "getProfile"]);
+    Route::get("profile", [UserController::class, "getProfile"]);
 
     Route::get("myFile", [ImgController::class, "getmyFile"])->name('myFile');
     
-    Route::get("logout", [ImgController::class, "getLogout"]);
+    Route::get("logout", [UserController::class, "getLogout"]);
 
     Route::post('upload', [ImgController::class, "postUploadImg"]);
 
