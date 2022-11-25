@@ -343,6 +343,54 @@ class ImgController extends Controller
     }
 
     // chức năng mở rộng : thumbnail , banner , xóa nền, resize
+    public function postCreateImgResize(Request $request)
+    {
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+            $typeImg = array();
+            foreach ($files as $file) {
+                // cho vào file 
+                $filename = $file->getClientOriginalName(); 
+                $type = $file->getClientOriginalExtension();// lấy ra loại ảnh
+                $file->move('Advance/Upload', $filename);
+                array_push($typeImg, $type);
+            }
+            $request->session()->put('typeImg', $typeImg);
+            return response()->json([
+                "status" => 200,
+                "message" => "Upload successfully",
+                "data" => $request->session()->put('typeImg', $typeImg)
+            ],200);
+        } else {
+            return response()->json([
+                "status" => 404,
+                "message" => "File not found"
+            ],404);
+        }
+    }
+    public function resize(Request $request)
+    {
+        $fileType =  $request->session()->get('typeImg');
+        $width = $request->width;
+        $height = $request->height;
+        $date = getdate();
+        $ngay = $date['mday'] . $date['mon'] . $date['year'];
+        $imgData = glob('Advance/Upload/*');
+        $i = 0;
+        foreach ($imgData as $file) {
+            $only_name = basename($file, '.' . $fileType[$i]); // tách đuôi ảnh
+   
+            $name = $only_name . '_' . $ngay . '_' . $i .'.'.$fileType[$i];
+       
+            $image = Image::make($file);
+            $image->fit($width, $height)->save('Advance/Resize/' . $name);
+            $i++;
+        }
+        return response()->json([
+            "status" => 200,
+            "message" => "Resize successfully"
+        ]);
+    }
     public function postCreateThumbnail(Request $request)
     {
         if ($request->hasFile('profile_image')) {
@@ -426,6 +474,7 @@ class ImgController extends Controller
             echo "<img src='remove/$rand.png'>";
         }
     }
+
     public function download_img(Request $request)
     {
         $date = getdate();
