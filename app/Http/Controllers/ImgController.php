@@ -14,42 +14,52 @@ use Image;
 
 class ImgController extends Controller
 {
+    // Đăng ký tài khoản
     public function postRegister(Request $request)
     {
         $request->validate([
             "name" => "required",
             "email" => "required|email|unique:users",
             "phone" => "required",
-            "password" => "required|confirmed",
+            "password" => "required|confirmed|min:6",
             "role" => "required"
-
         ]);
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->password = bcrypt($request->password);
-        $user->role = $request->role;
-        $user->save();
+        try {
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->password = bcrypt($request->password);
+            $user->role = $request->role;
+            $user->save();
 
-        $emailTarget = $request->email; // email thằng nhận
+        // $emailTarget = $request->email; // email thằng nhận
 
         // gửi email thông báo đăng ký thành công
-        Mail::send(
-            'testMail',
-            ['name' => $request->name, 'email' => $request->email, 'password' => $request->password],
-            function ($email) use ($emailTarget) { // phải dùng phương thức use mới dùng được biến $emailTarget
-                $email->subject('Chúc mừng bạn đã đăng ký thành công');
-                $email->to($emailTarget);
-            }
-        );
-        return response()->json([
-            "status" => 200,
-            "message" => "user registered successfully"
-        ], 200);
+        // Mail::send(
+        //     'testMail',
+        //     ['name' => $request->name, 'email' => $request->email, 'password' => $request->password],
+        //     function ($email) use ($emailTarget) { // phải dùng phương thức use mới dùng được biến $emailTarget
+        //         $email->subject('Chúc mừng bạn đã đăng ký thành công');
+        //         $email->to($emailTarget);
+        //     }
+        // );
+
+            return response()->json([
+                "status" => 200,
+                "message" => "user registered successfully"
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'There was an error while processing your request: ' .
+                    $e->getMessage()
+            ], 500);
+        }
     }
 
+    // Danh sách ảnh
     public function getmyFile()
     {
         $ImgClient = ImgClient::where('user_id', Auth::user()->id)->get();
@@ -59,7 +69,7 @@ class ImgController extends Controller
         ], 200);
     }
 
-
+    // Đăng nhập
     public function postLogin(Request $request)
     {
         // validation
@@ -86,6 +96,7 @@ class ImgController extends Controller
         ]);
     }
 
+    // Thông tin user hiện tại
     public function getProfile()
     {
         $userLogin = User::where('id', Auth::user()->id)->first();
@@ -97,6 +108,7 @@ class ImgController extends Controller
         ]);
     }
 
+    // Đăng xuất
     public function getLogout(Request $request)
     {
         auth()->logout();
@@ -107,6 +119,7 @@ class ImgController extends Controller
         ]);
     }
 
+    // upload hình ảnh
     public function postUploadImg(Request $request)
     {
 
@@ -138,6 +151,7 @@ class ImgController extends Controller
         }
     }
 
+    // Danh sách toàn bộ hình ảnh
     public function getImageData()
     {
         $imgData = Img::all();
@@ -148,6 +162,7 @@ class ImgController extends Controller
         ]);
     }
 
+    // Xóa hình ảnh
     public function deleteImg(Request $request, $id)
     {
         $target_dir = 'source/image/';
@@ -160,6 +175,7 @@ class ImgController extends Controller
         ]);
     }
 
+    // Convert ảnh
     public function convertImageData(Request $request, $image_quality = 100)
     {
         $request->validate([
@@ -403,6 +419,8 @@ class ImgController extends Controller
             ]);
         }
     }
+
+    // Tạo thumbnail
     public function createThumbnail($path, $width, $height)
     {
         $img = Image::make($path)->resize($width, $height, function ($constraint) {
@@ -410,7 +428,8 @@ class ImgController extends Controller
         });
         $img->save($path);
     }
-    // xóa nền
+
+    // Xóa nền
     public function postRemoveBackground(Request $request)
     {
         if(isset($_POST['submit'])){
@@ -438,6 +457,8 @@ class ImgController extends Controller
             echo "<img src='remove/$rand.png'>";
         }
     }
+
+    // Tải hình ảnh
     public function download_img(Request $request)
     {
         $date = getdate();
@@ -503,6 +524,8 @@ class ImgController extends Controller
             "message" => "Download successfully"
         ]);
     }
+
+    // Định dang kích thước hình ảnh
     function formatSizeUnits($bytes)
     {
         if ($bytes >= 1073741824) {
