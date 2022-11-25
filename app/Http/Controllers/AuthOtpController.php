@@ -41,7 +41,7 @@ class AuthOtpController extends Controller
         ]);
     }
 
-    public function index($receiverNumber,$message)
+    public function index($receiverNumber,$message) // hàm này để gửi sms 
     {
         $account_sid = env("TWILIO_SID");
         $auth_token = env("TWILIO_TOKEN");
@@ -86,13 +86,13 @@ class AuthOtpController extends Controller
         ]);
     }
 
-    public function verification($user_id)
-    {
-        return response()->json([
-            "status" => 200,
-            'user_id' => $user_id
-        ]);
-    }
+    // public function verification($user_id)
+    // {
+    //     return response()->json([
+    //         "status" => 200,
+    //         'user_id' => $user_id
+    //     ]);
+    // }
 
     public function loginWithOtp(Request $request)
     {
@@ -108,8 +108,18 @@ class AuthOtpController extends Controller
         $now = Carbon::now();
         if (!$verificationCode) {
             return redirect()->back()->with('error', 'Your OTP is not correct');
+            return response()->json([
+                // "status" => 200,
+                "message" => 'Your OTP is not correct',
+              
+            ]);
         } elseif ($verificationCode && $now->isAfter($verificationCode->expire_at)) {
             return redirect()->route('otp.login')->with('error', 'Your OTP has been expired');
+            return response()->json([
+                // "status" => 200,
+                "message" => 'Your OTP has been expired',
+              
+            ]);
         }
 
         $user = User::whereId($request->user_id)->first();
@@ -122,9 +132,18 @@ class AuthOtpController extends Controller
 
             Auth::login($user);
 
-            return view('Upload');
+            return response()->json([
+                // "status" => 200,
+                "message" => 'user login successfully',
+              
+            ]);
         }
 
-        return redirect()->route('otp.login')->with('error', 'Your Otp is not correct');
+        // return redirect()->route('otp.login')->with('error', 'Your Otp is not correct');
+        return response()->json([
+            // "status" => 200,
+            "message" => 'Your Otp is not correct',
+          
+        ]);
     }
 }
