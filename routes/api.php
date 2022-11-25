@@ -39,7 +39,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     // OTP
     Route::post('otp-generate', [AuthOtpController::class, "generate"])->name('otp.generate');
-    Route::get('otp-verification/{user_id}', [AuthOtpController::class, "verification"])->name('otp.verification');
+    // Route::get('otp-verification/{user_id}', [AuthOtpController::class, "verification"])->name('otp.verification');
     Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');
 
     Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);

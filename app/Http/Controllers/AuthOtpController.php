@@ -34,7 +34,7 @@ class AuthOtpController extends Controller
          // send response
          return response()->json([
             "status" => 200,
-            "message" => "Logged in successfully",
+            "message" => "Create OTP successfully",
             'user_id' => $verificationCode->user_id,
             'message'=>$message
 
