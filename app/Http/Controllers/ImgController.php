@@ -539,4 +539,40 @@ class ImgController extends Controller
             ], 406);
         }
     }
+
+    // Tải hình ảnh
+    public function downloadImage(Request $request)
+    {
+        $imageIds = $request->ids;
+        $date = getdate();
+
+        if (count($imageIds) == 1) {
+            $image = DuckImage::where('id', $imageIds[0])->first();
+            $imagePath = "source/convert/" . Auth::user()->id . "/" . $image->name;
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Download successfully",
+                "data" => $_SERVER['APP_URL'] . "/" . $imagePath
+            ], 200);
+        } else {
+            // $ngay = $date['mday'] . $date['mon'] . $date['year'] . $date['hours'] . $date['minutes'] . $date['seconds'];
+            // $archive_file_name = $ngay . '.zip';
+            // $file_names = glob("source/convert/*");
+            // $file_path =  'source/convert/';
+            // $zip = new ZipArchive();
+            // $zip->open($archive_file_name, ZipArchive::CREATE);
+            // foreach ($file_names as $file) {
+            //     $zip->addFile($file_path . basename($file));
+            // }
+            // $zip->close();
+
+            // header("Content-type: application/zip");
+            // header("Content-Disposition: attachment; filename=$archive_file_name");
+            // header("Content-length: " . filesize($archive_file_name));
+            // header("Pragma: no-cache");
+            // header("Expires: 0");
+            // readfile("$archive_file_name");
+        }
+    }
 }

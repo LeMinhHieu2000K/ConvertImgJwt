@@ -20,6 +20,40 @@ Route::post("register", [UserController::class, "postRegister"]);
 
 Route::post("login", [UserController::class, "postLogin"]);
 
+// Route::group(["middleware" => ["auth:api"]], function () {
+
+//     Route::get("profile", [UserController::class, "getProfile"]);
+
+//     Route::get("myFile", [ImgController::class, "getmyFile"])->name('myFile');
+    
+//     Route::get("logout", [UserController::class, "getLogout"]);
+
+//     Route::post('upload', [ImgController::class, "postUploadImg"]);
+
+//     Route::get('image-data', [ImgController::class, "getImageData"]);
+
+//     Route::post('convert', [ImgController::class, "convertImageData"]);
+
+//     Route::get('download', [ImgController::class, "download_img"]);
+
+//     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
+
+//     // OTP
+//     Route::post('otp-generate', [AuthOtpController::class, "generate"])->name('otp.generate');
+//     Route::get('otp-verification/{user_id}', [AuthOtpController::class, "verification"])->name('otp.verification');
+//     Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');
+
+//     Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);
+//     Route::post('remove-background' ,  [ImgController::class, "postRemoveBackground"]);
+
+
+// });
+
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+// branch duck
 Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::get("profile", [UserController::class, "getProfile"]);
@@ -34,7 +68,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('convert', [ImgController::class, "convertImage"]);
 
-    Route::get('download', [ImgController::class, "download_img"]);
+    Route::get('download', [ImgController::class, "downloadImage"]);
 
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
 
@@ -45,10 +79,4 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);
     Route::post('remove-background' ,  [ImgController::class, "postRemoveBackground"]);
-
-
-});
-
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
 });
