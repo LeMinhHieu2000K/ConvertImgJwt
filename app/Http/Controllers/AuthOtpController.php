@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
-use App\Models\VerificationCode;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Http\Request;
+use App\Models\VerificationCode;
+use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
 
 class AuthOtpController extends Controller
 {
-   
+ 
     // Generate OTP
     public function generate(Request $request)
     {
@@ -25,46 +23,33 @@ class AuthOtpController extends Controller
         # Generate An OTP
         $verificationCode = $this->generateOtp($request->phone);
 
-        $CodeOtp = $verificationCode->otp;
-        $phone = $request->phone;
-        $receiverNumber = '+84'.$phone;
-        $message = "Your OTP is :".$CodeOtp;
-        $this->index($receiverNumber,$message);
+        $message = "Your OTP To Login is - ".$verificationCode->otp;
+        # Return With OTP 
 
-         // send response
-         return response()->json([
+
+        $receiverNumber = "+84". ltrim($request->phone, "0"); // Gửi OTP đến số điện thoại
+        try {
+            $account_sid = getenv("TWILIO_SID");
+            $auth_token = getenv("TWILIO_TOKEN");
+            $twilio_number = getenv("TWILIO_FROM");
+  
+            $client = new Client($account_sid, $auth_token);
+            $client->messages->create($receiverNumber, [
+                'from' => $twilio_number, 
+                'body' => $message]);
+    
+        } catch (Exception $e) {
+            dd("Error: ". $e->getMessage());
+        }
+
+        // return redirect()->route('otp.verification', ['user_id' => $verificationCode->user_id,'message'=>$message])->with('success'); 
+        return response()->json([
             "status" => 200,
-            "message" => "Create OTP successfully",
-            'user_id' => $verificationCode->user_id,
-            'message'=>$message
-
+            "message" => "Create OTP CODE successfully",
+            "user_id" => $verificationCode->user_id
         ]);
     }
 
-    public function index($receiverNumber,$message) // hàm này để gửi sms 
-    {
-        $account_sid = env("TWILIO_SID");
-        $auth_token = env("TWILIO_TOKEN");
-        $twilio_number = env("TWILIO_FROM");
-        $to = $receiverNumber;
-       
-        $client = new Client($account_sid, $auth_token);
-        try {
-            $client->messages->create(
-                $to,
-                [
-                    "body" => $message,
-                    "from" => $twilio_number
-                ]
-            );
-            Log::info('Message sent to ' . $twilio_number);
-        } catch (Exception $e) {
-            Log::error(
-                'Could not send SMS notification.' .
-                ' Twilio replied with: ' . $e
-            );
-        }
-    }
     public function generateOtp($phone) // hàm tạo mã OTP
     {
         $user = User::where('phone', $phone)->first();
@@ -74,7 +59,7 @@ class AuthOtpController extends Controller
 
         $now = Carbon::now();
 
-        if ($verificationCode && $now->isBefore($verificationCode->expire_at)) {
+        if($verificationCode && $now->isBefore($verificationCode->expire_at)){
             return $verificationCode;
         }
 
@@ -88,13 +73,12 @@ class AuthOtpController extends Controller
 
     // public function verification($user_id)
     // {
-    //     return response()->json([
-    //         "status" => 200,
+    //     return view('auth.otp-verification')->with([
     //         'user_id' => $user_id
     //     ]);
     // }
 
-    public function loginWithOtp(Request $request)
+    public function loginWithOtp(Request $request)// hàm đăng nhập với mã OTP
     {
         #Validation
         $request->validate([
@@ -107,43 +91,35 @@ class AuthOtpController extends Controller
 
         $now = Carbon::now();
         if (!$verificationCode) {
-            return redirect()->back()->with('error', 'Your OTP is not correct');
+            // return redirect()->back()->with('error', 'Your OTP is not correct');
             return response()->json([
                 // "status" => 200,
                 "message" => 'Your OTP is not correct',
-              
             ]);
-        } elseif ($verificationCode && $now->isAfter($verificationCode->expire_at)) {
-            return redirect()->route('otp.login')->with('error', 'Your OTP has been expired');
+        }elseif($verificationCode && $now->isAfter($verificationCode->expire_at)){
+            // return redirect()->route('otp.login')->with('error', 'Your OTP has been expired');
             return response()->json([
                 // "status" => 200,
                 "message" => 'Your OTP has been expired',
-              
             ]);
         }
 
         $user = User::whereId($request->user_id)->first();
 
-        if ($user) {
+        if($user){
             // Expire The OTP
             $verificationCode->update([
                 'expire_at' => Carbon::now()
             ]);
 
             Auth::login($user);
-
             return response()->json([
-                // "status" => 200,
-                "message" => 'user login successfully',
-              
+                "status" => 200,
+                "message" => 'Login Success',
             ]);
         }
-
-        // return redirect()->route('otp.login')->with('error', 'Your Otp is not correct');
         return response()->json([
-            // "status" => 200,
             "message" => 'Your Otp is not correct',
-          
         ]);
     }
 }

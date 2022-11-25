@@ -38,9 +38,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
 
     // OTP
-    Route::post('otp-generate', [AuthOtpController::class, "generate"])->name('otp.generate');
-    // Route::get('otp-verification/{user_id}', [AuthOtpController::class, "verification"])->name('otp.verification');
-    Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');
+    Route::post('otp-generate', [AuthOtpController::class, "generate"])->name('otp.generate');// lấy mã OTP
+    Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');// đăng nhập với mã otp
 
     Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);
     Route::post('remove-background' ,  [ImgController::class, "postRemoveBackground"]);
