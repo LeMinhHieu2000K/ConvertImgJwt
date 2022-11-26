@@ -435,7 +435,7 @@ class ImgController extends Controller
 
             return response()->json([
                 "status" => 200,
-                "message" => "Thumbnail created successfully",
+                "message" => "Thumbnail created successfully"
             ]);
         }
     }

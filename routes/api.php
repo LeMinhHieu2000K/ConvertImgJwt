@@ -43,7 +43,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
     // @param {id}   , {page}
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
 
-    Route::post('create-thumbnail', [ImgController::class, "postCreateThumbnail"]);// có vẻ sai 
+    Route::post('create/thumbnail', [ImgController::class, "postCreateThumbnail"]);// done
+
     Route::post('remove-background',  [ImgController::class, "postRemoveBackground"]);// có vẻ sai 
     
     Route::post('create/resize',[ImgController::class, "postCreateImgResize"]);
