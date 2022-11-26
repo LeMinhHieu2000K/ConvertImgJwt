@@ -6,8 +6,6 @@ use App\Models\Img;
 use App\Models\ImgAfter;
 use App\Models\ImgClient;
 use App\Models\DuckImage;
-use App\Models\User;
-use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -595,6 +593,54 @@ class ImgController extends Controller
                 "message" => "Download successfully",
                 "data" => $_SERVER['APP_URL'] . "/" .  "source/zip/" . $archiveFileName
             ], 200);
+        }
+    }
+
+    // Xóa nền
+    public function removeBackground(Request $request)
+    {
+        if ($request->hasFile('files')) {
+            $file = $request->file('files')[0];
+            $fileName = $file->getClientOriginalName();
+
+            // move uploaded file to folder
+            $randomString = Str::random(7);
+            $file->move(public_path('source/remove-background'), $randomString . "_" . $fileName);
+
+            $imagePath = "source/remove-background/" . $randomString . "_" . $fileName;
+            $imageRemovedBackgroundPath = "source/remove-background/" . $randomString . "_" .  "remove_bg" . "_" . $fileName;
+
+            $client = new \GuzzleHttp\Client;
+            $res = $client->post('https://api.remove.bg/v1.0/removebg', [
+                'multipart' => [
+                    [
+                        'name'     => 'image_file',
+                        'contents' => fopen($imagePath, 'r')
+                    ],
+                    [
+                        'name'     => 'size',
+                        'contents' => 'auto'
+                    ]
+                ],
+                'headers' => [
+                    'X-Api-Key' => env("REMOVE_BG_API_KEY")
+                ]
+            ]);
+            
+            $fp = fopen($imageRemovedBackgroundPath, "wb");
+            fwrite($fp, $res->getBody());
+            fclose($fp);
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Remove background successfully",
+                "data" => $_SERVER['APP_URL'] . "/" . $imageRemovedBackgroundPath
+            ], 200);
+        } else{
+            return response()->json([
+                "status" => 406,
+                "message" => "Cannot find File uploaded"
+            ], 406);
         }
     }
 }

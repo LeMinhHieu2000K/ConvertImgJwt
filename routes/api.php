@@ -68,6 +68,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('convert', [ImgController::class, "convertImage"]);
 
+    Route::post('remove-background', [ImgController::class, "removeBackground"]);
+
     Route::get('download', [ImgController::class, "downloadImage"]);
 
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
@@ -78,5 +80,4 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::post('otp-login', [AuthOtpController::class, "loginWithOtp"])->name('otp.getlogin');
 
     Route::post('create-thumbnail' , [ImgController::class, "postCreateThumbnail"]);
-    Route::post('remove-background' ,  [ImgController::class, "postRemoveBackground"]);
 });
