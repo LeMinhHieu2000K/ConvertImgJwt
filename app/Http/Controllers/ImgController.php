@@ -590,7 +590,7 @@ class ImgController extends Controller
                 "status" => 200,
                 "message" => "Data Img converted successfully",
                 "data" => $imageConvertedData
-            ]);
+            ], 200);
         } else {
             return response()->json([
                 "status" => 406,
