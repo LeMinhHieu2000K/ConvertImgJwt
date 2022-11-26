@@ -93,8 +93,7 @@ class ImgController extends Controller
             $count++;
         }
 
-        for ($i = 0; $i < $count; $i++)
-        {
+        for ($i = 0; $i < $count; $i++) {
             $nameImg;
             $typeOriginal;
             $typeTarget[$i];
@@ -328,11 +327,11 @@ class ImgController extends Controller
     // Xóa nền
     public function postRemoveBackground(Request $request)
     {
-        if(isset($_POST['submit'])){
-            $rand=rand(111111111,999999999);
-            move_uploaded_file($_FILES['file']['tmp_name'],'upload/'.$rand.$_FILES['file']['name']);
-            $file="upload/".$rand.$_FILES['file']['name'];
-            
+        if (isset($_POST['submit'])) {
+            $rand = rand(111111111, 999999999);
+            move_uploaded_file($_FILES['file']['tmp_name'], 'upload/' . $rand . $_FILES['file']['name']);
+            $file = "upload/" . $rand . $_FILES['file']['name'];
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, 'https://api.remove.bg/v1.0/removebg');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -347,8 +346,8 @@ class ImgController extends Controller
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             $result = curl_exec($ch);
             curl_close($ch);
-            $fp=fopen('remove/'.$rand.'.png',"wb");
-            fwrite($fp,$result);
+            $fp = fopen('remove/' . $rand . '.png', "wb");
+            fwrite($fp, $result);
             fclose($fp);
             echo "<img src='remove/$rand.png'>";
         }
@@ -458,9 +457,8 @@ class ImgController extends Controller
             // get current date
             $date = getdate();
             $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
-    
-            for ($i = 0; $i < count($files); $i++)
-            {
+
+            for ($i = 0; $i < count($files); $i++) {
                 // file input name and extension
                 $fileName = $files[$i]->getClientOriginalName();
                 $extension = $files[$i]->getClientOriginalExtension();
@@ -479,19 +477,19 @@ class ImgController extends Controller
                 // convert image
                 switch ($typeTarget[$i]) {
                     case "webp":
-                        imagewebp($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);    
+                        imagewebp($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                         imagewebp($binary, NULL, 100);
-                      break;
+                        break;
                     case "gif":
                         imagegif($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i]);
                         imagegif($binary, NULL);
-                      break;
+                        break;
                     case "png":
-                        imagepng($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i]);  
+                        imagepng($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i]);
                         imagepng($binary, NULL);
-                      break;
+                        break;
                     default: //jpeg
-                        imagejpeg($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);   
+                        imagejpeg($binary, $target_dir . $only_name1 . '.' . $typeTarget[$i], $image_quality);
                         imagejpeg($binary, NULL, 100);
                 }
 
@@ -504,13 +502,13 @@ class ImgController extends Controller
                 switch ($typeTarget[$i]) {
                     case "webp":
                         imagewebp($content, $output);
-                      break;
+                        break;
                     case "gif":
                         imagegif($content, $output);
-                      break;
+                        break;
                     case "png":
                         imagepng($content, $output);
-                      break;
+                        break;
                     default: //jpeg
                         imagejpeg($content, $output);
                 }
@@ -526,7 +524,7 @@ class ImgController extends Controller
 
                 array_push($imageConvertedId, $duckImage);
             }
-    
+
             return response()->json([
                 "status" => 200,
                 "message" => "Data Img converted successfully",
@@ -543,36 +541,60 @@ class ImgController extends Controller
     // Tải hình ảnh
     public function downloadImage(Request $request)
     {
+        // get id input
         $imageIds = $request->ids;
-        $date = getdate();
 
         if (count($imageIds) == 1) {
-            $image = DuckImage::where('id', $imageIds[0])->first();
-            $imagePath = "source/convert/" . Auth::user()->id . "/" . $image->name;
+            if (DuckImage::where([['id', $imageIds[0]], ['user_id', Auth::user()->id]])->exists()) {
+                $image = DuckImage::where('id', $imageIds[0])->first();
+                $imagePath = "source/convert/" . Auth::user()->id . "/" . $image->name;
+
+                return response()->json([
+                    "status" => 200,
+                    "message" => "Download successfully",
+                    "data" => $_SERVER['APP_URL'] . "/" . $imagePath
+                ], 200);
+            } else {
+                return response()->json([
+                    "status" => 404,
+                    "message" => "Image not found"
+                ], 404);
+            }
+        } else {
+            // zip file if multiple images
+
+            // check images exist
+            foreach ($imageIds as $id) {
+                if (!DuckImage::where([['id', $id], ['user_id', Auth::user()->id]])->exists()) {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "Image not found"
+                    ], 404);
+                }
+            }
+
+            // create zip file name
+            $date = getdate();
+            $ngay = $date['mday'] . $date['mon'] . $date['year'] . "_" . Str::random(7);;
+            $archiveFileName = $ngay . '.zip';
+
+            // zip images
+            $zip = new ZipArchive();
+            $zip->open($archiveFileName, ZipArchive::CREATE);
+            if ($zip->open(public_path("source/zip/" . $archiveFileName), ZipArchive::CREATE) === TRUE) {
+                foreach ($imageIds as $id) {
+                    $image = DuckImage::where('id', $id)->first();
+                    $imagePath = "source/convert/" . Auth::user()->id . "/" . $image->name;
+                    $zip->addFile($imagePath, $image->name);
+                }
+                $zip->close();
+            }
 
             return response()->json([
                 "status" => 200,
                 "message" => "Download successfully",
-                "data" => $_SERVER['APP_URL'] . "/" . $imagePath
+                "data" => $_SERVER['APP_URL'] . "/" .  "source/zip/" . $archiveFileName
             ], 200);
-        } else {
-            // $ngay = $date['mday'] . $date['mon'] . $date['year'] . $date['hours'] . $date['minutes'] . $date['seconds'];
-            // $archive_file_name = $ngay . '.zip';
-            // $file_names = glob("source/convert/*");
-            // $file_path =  'source/convert/';
-            // $zip = new ZipArchive();
-            // $zip->open($archive_file_name, ZipArchive::CREATE);
-            // foreach ($file_names as $file) {
-            //     $zip->addFile($file_path . basename($file));
-            // }
-            // $zip->close();
-
-            // header("Content-type: application/zip");
-            // header("Content-Disposition: attachment; filename=$archive_file_name");
-            // header("Content-length: " . filesize($archive_file_name));
-            // header("Pragma: no-cache");
-            // header("Expires: 0");
-            // readfile("$archive_file_name");
         }
     }
 }
