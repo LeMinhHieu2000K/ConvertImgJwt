@@ -70,6 +70,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('remove-background', [ImgController::class, "removeBackground"]);
 
+    Route::post('resize', [ImgController::class, "resizeImage"]);
+
     Route::get('download', [ImgController::class, "downloadImage"]);
 
     Route::delete('delete/{id}', [ImgController::class, "getImageData"]);

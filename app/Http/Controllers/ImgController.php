@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use ZipArchive;
-// use Image;
+use Intervention\Image\Facades\Image;
 
 class ImgController extends Controller
 {
@@ -313,7 +313,7 @@ class ImgController extends Controller
         }
     }
 
-    // Tạo thumbnail
+    // Resize
     public function createThumbnail($path, $width, $height)
     {
         $img = Image::make($path)->resize($width, $height, function ($constraint) {
@@ -635,6 +635,44 @@ class ImgController extends Controller
                 "status" => 200,
                 "message" => "Remove background successfully",
                 "data" => $_SERVER['APP_URL'] . "/" . $imageRemovedBackgroundPath
+            ], 200);
+        } else{
+            return response()->json([
+                "status" => 406,
+                "message" => "Cannot find File uploaded"
+            ], 406);
+        }
+    }
+
+    // Resize ảnh
+    public function resizeImage(Request $request)
+    {
+        $request->validate([
+            "percentage" => "required"
+        ]);
+
+        if ($request->hasFile('files')) {
+            // get input data
+            $file = $request->file('files')[0];
+            $fileName = $file->getClientOriginalName();
+            $percentage = $request->percentage;
+            $randomString = Str::random(7);
+
+            $imagePath = "source/resize/" . $randomString . "_" . "resize" . "_" . $fileName;
+
+            // create image
+            $img = Image::make($file->path());
+
+            // resize image
+            $img->resize($img->width() * ($percentage / 100), $img->height() * ($percentage / 100), function ($constraint) {
+                $constraint->aspectRatio();
+            });
+            $img->save($imagePath);
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Resize image successfully",
+                "data" => $_SERVER['APP_URL'] . "/" . $imagePath
             ], 200);
         } else{
             return response()->json([
