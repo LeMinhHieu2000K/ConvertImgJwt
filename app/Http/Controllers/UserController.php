@@ -45,9 +45,9 @@ class UserController extends Controller
         File::makeDirectory($path, 0777, true, true);
 
         return response()->json([
-            "status" => 200,
+            "status" => 201,
             "message" => "user registered successfully"
-        ], 200);
+        ], 201);
     }
 
     // Danh sách ảnh
@@ -73,9 +73,9 @@ class UserController extends Controller
         if (!$token = auth('api')->attempt(["email" => $request->email, "password" => $request->password])) {
 
             return response()->json([
-                "status" => 404,
+                "status" => 403,
                 "message" => "Invalid credentials"
-            ], 404);
+            ], 403);
         }
 
         // send response
@@ -99,7 +99,7 @@ class UserController extends Controller
     }
 
     // Đăng xuất
-    public function getLogout(Request $request)
+    public function getLogout()
     {
         auth()->logout();
 
