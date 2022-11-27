@@ -93,15 +93,15 @@ class AuthOtpController extends Controller
         if (!$verificationCode) {
             // return redirect()->back()->with('error', 'Your OTP is not correct');
             return response()->json([
-                // "status" => 200,
+                "status" => 405,
                 "message" => 'Your OTP is not correct',
             ]);
         }elseif($verificationCode && $now->isAfter($verificationCode->expire_at)){
             // return redirect()->route('otp.login')->with('error', 'Your OTP has been expired');
             return response()->json([
-                // "status" => 200,
+                "status" => 419,
                 "message" => 'Your OTP has been expired',
-            ]);
+            ],419);
         }
 
         $user = User::whereId($request->user_id)->first();
@@ -116,10 +116,11 @@ class AuthOtpController extends Controller
             return response()->json([
                 "status" => 200,
                 "message" => 'Login Success',
-            ]);
+            ],200);
         }
         return response()->json([
-            "message" => 'Your Otp is not correct',
-        ]);
+            "status" => 405,
+            "message" => 'Your Otp is not correct'
+        ],200);
     }
 }

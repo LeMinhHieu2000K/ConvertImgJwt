@@ -41,13 +41,14 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     //  ?Beta: API GET Profile Login
     // @param {id}   , {page}
-    Route::delete('delete/{id}', [ImgController::class, "getImageData"]);
+    Route::delete('delete/{id}', [ImgController::class, "deleteImg"]);
 
     Route::post('create/thumbnail', [ImgController::class, "postCreateThumbnail"]);// done
 
     Route::post('remove-background',  [ImgController::class, "postRemoveBackground"]);// có vẻ sai 
     
     Route::post('create/resize',[ImgController::class, "postCreateImgResize"]);
+    
     Route::post('resize/image',[ImgController::class, "resize"]);
 
 

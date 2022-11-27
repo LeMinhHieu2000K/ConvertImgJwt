@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Img;
 use App\Models\ImgAfter;
 use App\Models\ImgClient;
@@ -55,6 +54,7 @@ class ImgController extends Controller
         $ImgClient = ImgClient::where('user_id', Auth::user()->id)->get();
         return response()->json([
             "status" => 200,
+            "message" => "get user file successfully",
             "data" => $ImgClient
         ], 200);
     }
@@ -94,7 +94,7 @@ class ImgController extends Controller
             "status" => 200,
             "message" => "Get data successfully",
             "data" => $userLogin
-        ]);
+        ],200);
     }
 
     public function getLogout(Request $request)
@@ -133,8 +133,9 @@ class ImgController extends Controller
             ]);
         } else {
             return response()->json([
+                "status" => 404,
                 "message" => "ko có file"
-            ]);
+            ],404);
         }
     }
 
@@ -145,7 +146,7 @@ class ImgController extends Controller
             "status" => 200,
             "message" => "Data Img",
             "data" => $imgData
-        ]);
+        ],200);
     }
 
     public function deleteImg(Request $request, $id)
@@ -538,7 +539,7 @@ class ImgController extends Controller
         return response()->json([
             "status" => 200,
             "message" => "Download successfully"
-        ]);
+        ],200);
     }
     function formatSizeUnits($bytes)
     {
