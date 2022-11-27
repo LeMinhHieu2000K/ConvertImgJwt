@@ -71,7 +71,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('resize', [ImgController::class, "resizeImage"]);
 
-    Route::get('download', [ImgController::class, "downloadImage"]);
+    Route::post('download', [ImgController::class, "downloadImage"]);
 
     Route::post('checkout', [CheckoutController::class, "createCheckout"]);
 });
