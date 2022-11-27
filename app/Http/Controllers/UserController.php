@@ -18,7 +18,7 @@ class UserController extends Controller
             "email" => "required|email|unique:users",
             "phone" => "required",
             "password" => "required|confirmed|min:6",
-            "role" => "required"
+            "role" => "required|integer"
         ]);
 
         $user = new User();
