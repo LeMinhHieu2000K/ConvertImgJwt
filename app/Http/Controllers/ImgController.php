@@ -677,13 +677,14 @@ class ImgController extends Controller
         if ($request->hasFile('files')) {
             $file = $request->file('files')[0];
             $fileName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
 
             // move uploaded file to folder
-            $randomString = Str::random(7);
-            $file->move(public_path('source/remove-background'), $randomString . "_" . $fileName);
+            $randomString = Str::random(10);
+            $file->move(public_path('source/remove-background'), $randomString . "." . $extension);
 
-            $imagePath = "source/remove-background/" . $randomString . "_" . $fileName;
-            $imageRemovedBackgroundPath = "source/remove-background/" . $randomString . "_" .  "remove_bg" . "_" . $fileName;
+            $imagePath = "source/remove-background/" . $randomString . "." . $extension;
+            $imageRemovedBackgroundPath = "source/remove-background/" . $randomString . "_" .  "remove_bg" . "." . $extension;
 
             $client = new \GuzzleHttp\Client;
             $res = $client->post('https://api.remove.bg/v1.0/removebg', [
@@ -729,11 +730,11 @@ class ImgController extends Controller
         if ($request->hasFile('files')) {
             // get input data
             $file = $request->file('files')[0];
-            $fileName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
             $percentage = $request->percentage;
-            $randomString = Str::random(7);
+            $randomString = Str::random(10);
 
-            $imagePath = "source/resize/" . $randomString . "_" . "resize" . "_" . $fileName;
+            $imagePath = "source/resize/" . $randomString . "_" . "resize" . "." . $extension;
 
             // create image
             $img = Image::make($file->path());
