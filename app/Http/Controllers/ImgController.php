@@ -550,47 +550,56 @@ class ImgController extends Controller
             $files = $request->file('files');
             $typeTarget = $request->typeImage;
 
-            $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
+            if(count($files) == count($typeTarget)){
+                $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
 
-            // get current date
-            $date = getdate();
-            $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
+                // get current date
+                $date = getdate();
+                $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
+    
+                for ($i = 0; $i < count($files); $i++) {
+                    // get image data
+                    $fileName = $files[$i]->getClientOriginalName();
+                    $extension = $files[$i]->getClientOriginalExtension();
+                    $size = $files[$i]->getSize();
+    
+                    // save image to disk
+                    $img = Image::make($files[$i]->getRealPath());
+                    $img->stream();
+                    $diskImagePath = Auth::user()->id . "/" . $fileName;
+                    Storage::disk('local')->put(Auth::user()->id . "/" . $fileName, $img, 'public');
+    
+                    // create new image name
+                    $fileOriginName = basename($fileName, '.' . $extension);
+                    $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
+                    $newName = $only_name1 . '.' . $typeTarget[$i];
+    
+                    // save to table
+                    $duckImage = new DuckImage();
+                    $duckImage->name = $newName;
+                    $duckImage->user_id = Auth::user()->id;
+                    $duckImage->size_before = $size;
+                    $duckImage->save();
 
-            for ($i = 0; $i < count($files); $i++) {
-                // get image data
-                $fileName = $files[$i]->getClientOriginalName();
-                $extension = $files[$i]->getClientOriginalExtension();
-                $size = $files[$i]->getSize();
-
-                // save image to disk
-                $img = Image::make($files[$i]->getRealPath());
-                $img->stream();
-                $diskImagePath = Auth::user()->id . "/" . $fileName;
-                Storage::disk('local')->put(Auth::user()->id . "/" . $fileName, $img, 'public');
-
-                // create new image name
-                $fileOriginName = basename($fileName, '.' . $extension);
-                $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
-                $newName = $only_name1 . '.' . $typeTarget[$i];
-
-                // save to table
-                $duckImage = new DuckImage();
-                $duckImage->name = $newName;
-                $duckImage->user_id = Auth::user()->id;
-                $duckImage->size_before = $size;
-                $duckImage->save();
-
-                // start convert image
-                ProcessConvertImage::dispatch($typeTarget[$i], $target_dir, $only_name1, $diskImagePath, $duckImage->id);
-
-                array_push($imageConvertedData, $duckImage);
-            }
-
-            return response()->json([
-                "status" => 200,
-                "message" => "Data Img converted successfully",
-                "data" => $imageConvertedData
-            ], 200);
+                    $duckImage->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
+    
+                    // start convert image
+                    ProcessConvertImage::dispatch($typeTarget[$i], $target_dir, $only_name1, $diskImagePath, $duckImage->id);
+    
+                    array_push($imageConvertedData, $duckImage);
+                }
+    
+                return response()->json([
+                    "status" => 200,
+                    "message" => "Data Image(s) converted successfully",
+                    "data" => $imageConvertedData
+                ], 200);
+            } else{
+                return response()->json([
+                    "status" => 403,
+                    "message" => "Files uploads and Type target must be equal"
+                ], 403);
+            } 
         } else {
             return response()->json([
                 "status" => 406,
