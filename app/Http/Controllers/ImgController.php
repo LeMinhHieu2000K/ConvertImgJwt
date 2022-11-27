@@ -581,12 +581,15 @@ class ImgController extends Controller
                     $duckImage->size_before = $size;
                     $duckImage->save();
 
-                    $duckImage->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
+                    $responseData = new DuckImage();
+                    $responseData->id = $duckImage->id;
+                    $responseData->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
+                    $responseData->size_before = $size;
     
                     // start convert image
                     ProcessConvertImage::dispatch($typeTarget[$i], $target_dir, $only_name1, $diskImagePath, $duckImage->id);
     
-                    array_push($imageConvertedData, $duckImage);
+                    array_push($imageConvertedData, $responseData);
                 }
     
                 return response()->json([
