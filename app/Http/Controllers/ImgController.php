@@ -614,6 +614,10 @@ class ImgController extends Controller
     // Tải hình ảnh
     public function downloadImage(Request $request)
     {
+        $request->validate([
+            "ids" => "required"
+        ]);
+
         // get id input
         $imageIds = $request->ids;
 
@@ -676,7 +680,6 @@ class ImgController extends Controller
     {
         if ($request->hasFile('files')) {
             $file = $request->file('files')[0];
-            $fileName = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
 
             // move uploaded file to folder
@@ -724,7 +727,7 @@ class ImgController extends Controller
     public function resizeImage(Request $request)
     {
         $request->validate([
-            "percentage" => "required"
+            "percentage" => "required|integer|min:1|max:99"
         ]);
 
         if ($request->hasFile('files')) {
