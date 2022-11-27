@@ -15,14 +15,36 @@ class ImgController extends Controller
 {
     public function postRegister(Request $request)
     {
-        $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users",
-            "phone" => "required",
-            "password" => "required|confirmed",
-            "role" => "required"
+        // $request->validate([
+        //     "name" => "required",
+        //     "email" => "required|email|unique:users",
+        //     "phone" => "required",
+        //     "password" => "required|confirmed",
+        //     "role" => "required"
 
-        ]);
+        // ]);
+        $this->validate(
+            $request,
+            [
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|confirmed',
+                'password_confirmation' => 'same:password',
+                'phone' => 'required|unique:users,phone',
+                'role'=> 'required'
+            ],
+            [
+                'name.required' => 'Bạn chưa nhập tên',
+                'email.required' => 'Bạn chưa nhập email',
+                'email.email' => 'Bạn chưa nhập đúng định dạng email',
+                'email.unique' => 'Email này đã tồn tại',
+                'password.required' => 'Bạn chưa nhập password',
+                "password.confirmed" => "Bạn chưa xác nhận password",
+                'phone.required' => 'Bạn chưa nhập số điện thoại',
+                'phone.unique' => 'Số điện thoại đã tồn tại',
+                'role.required'=>'Bạn chưa nhập vai trò'
+            ]
+        );
 
         $user = new User();
         $user->name = $request->name;
