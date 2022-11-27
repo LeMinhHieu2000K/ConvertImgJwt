@@ -15,6 +15,7 @@
         "intervention/image": "^2.7",
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
+        "nao-pon/flysystem-google-drive": "~1.1",
         "twilio/sdk": "^6.43",
         "tymon/jwt-auth": "^1.0"
     },

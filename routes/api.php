@@ -74,4 +74,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::post('download', [ImgController::class, "downloadImage"]);
 
     Route::post('checkout', [CheckoutController::class, "createCheckout"]);
+
+    Route::get("driver", [ImgController::class, "getGoogleDriveFile"]);
+
+    Route::post("driver", [ImgController::class, "convertGoogleDriveFile"]);
 });

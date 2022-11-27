@@ -760,4 +760,70 @@ class ImgController extends Controller
             ], 406);
         }
     }
+
+    // Lấy toàn bộ ảnh từ Google Drive
+    public function getGoogleDriveFile(){
+        $driveService = Storage::disk('google');
+        $query = "'" . env("GOOGLE_DRIVE_FOLDER_ID") . "' in parents and trashed=false";
+
+        $optParams = [
+            'fields' => 'nextPageToken, files(id, name)',
+            'q' => $query
+        ];
+
+        $results = $driveService->files->listFiles($optParams);
+
+        return response()->json([
+            "status" => 200,
+            "message" => "Get file successfully",
+            "data" => $results->getFiles()
+        ], 200);
+    }
+
+    // Convert ảnh từ Google Drive
+    public function convertGoogleDriveFile(Request $request){
+        $request->validate([
+            "typeImage" => "required"
+        ]);
+
+        $typeTarget = $request->typeImage;
+        $fileName = "163496.jpg";
+        $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
+        $fileOriginName = basename("163496.jpg");
+        // get current date
+        $date = getdate();
+        $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
+        $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
+        $diskImagePath = Auth::user()->id . "/" . $fileName;
+        $newName = $only_name1 . '.' . $typeTarget;
+
+        // save to table
+        $duckImage = new DuckImage();
+        $duckImage->name = $newName;
+        $duckImage->user_id = Auth::user()->id;
+        $duckImage->size_before = 1;
+        $duckImage->save();
+
+        $responseData = new DuckImage();
+        $responseData->id = $duckImage->id;
+        $responseData->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
+        $responseData->size_before = 1;
+
+        $driveService = Storage::disk('google');
+
+        $file = $driveService->files->get('1qD_YIS7gpNQk4v-ujI7Dx8z3REOeVYTb', array(
+            'alt' => 'media'));
+        $file =  $file->getBody()->getContents();
+
+        // save file to Storage
+        Storage::disk('local')->put(Auth::user()->id . "/" . "163496.jpg", $file, 'public');
+
+        // start convert image
+        ProcessConvertImage::dispatch($typeTarget, $target_dir, $only_name1, $diskImagePath, $duckImage->id);
+
+        return response()->json([
+            "status" => 200,
+            "message" => "Get file successfully"
+        ], 200);
+    }
 }
