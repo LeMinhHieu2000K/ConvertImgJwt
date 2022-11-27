@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\File;
-use App\Models\ImgClient;
+use App\Models\DuckImage;
 use App\Models\User;
 
 class UserController extends Controller
@@ -53,10 +53,11 @@ class UserController extends Controller
     // Danh sách ảnh
     public function getmyFile()
     {
-        $ImgClient = ImgClient::where('user_id', Auth::user()->id)->get();
+        $duckImage = DuckImage::where('user_id', Auth::user()->id)->get();
         return response()->json([
             "status" => 200,
-            "data" => $ImgClient
+            "message" => "Images list",
+            "data" => $duckImage
         ], 200);
     }
 
