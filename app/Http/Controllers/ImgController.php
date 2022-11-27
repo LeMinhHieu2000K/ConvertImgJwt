@@ -739,7 +739,7 @@ class ImgController extends Controller
             $img = Image::make($file->path());
 
             // resize image
-            $img->resize($img->width() * ($percentage / 100), $img->height() * ($percentage / 100), function ($constraint) {
+            $img->resize($img->width() * (1- $percentage / 100), $img->height() * (1 - $percentage / 100), function ($constraint) {
                 $constraint->aspectRatio();
             });
             $img->save($imagePath);
