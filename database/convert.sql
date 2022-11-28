@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 25, 2022 at 03:34 AM
--- Server version: 10.4.24-MariaDB
--- PHP Version: 7.4.29
+-- Máy chủ: 127.0.0.1
+-- Thời gian đã tạo: Th10 28, 2022 lúc 08:19 AM
+-- Phiên bản máy phục vụ: 10.4.22-MariaDB
+-- Phiên bản PHP: 8.0.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,17 +18,57 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `convert`
+-- Cơ sở dữ liệu: `convert`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `failed_jobs`
+-- Cấu trúc bảng cho bảng `checkout`
+--
+
+CREATE TABLE `checkout` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `bank_name` varchar(50) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `checkout_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Đang đổ dữ liệu cho bảng `checkout`
+--
+
+INSERT INTO `checkout` (`id`, `user_id`, `bank_name`, `amount`, `checkout_date`, `created_at`, `updated_at`) VALUES
+(1, 13, 'Momo', 10000, '2022-11-25 17:36:00', '2022-11-26 11:52:48', '2022-11-26 11:52:48');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `duck_image`
+--
+
+CREATE TABLE `duck_image` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `size_before` int(11) NOT NULL,
+  `size_after` int(11) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `failed_jobs`
 --
 
 CREATE TABLE `failed_jobs` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `queue` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -39,7 +79,7 @@ CREATE TABLE `failed_jobs` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `img`
+-- Cấu trúc bảng cho bảng `img`
 --
 
 CREATE TABLE `img` (
@@ -53,7 +93,7 @@ CREATE TABLE `img` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `imgafter`
+-- Cấu trúc bảng cho bảng `imgafter`
 --
 
 CREATE TABLE `imgafter` (
@@ -69,7 +109,7 @@ CREATE TABLE `imgafter` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `imgclient`
+-- Cấu trúc bảng cho bảng `imgclient`
 --
 
 CREATE TABLE `imgclient` (
@@ -82,7 +122,23 @@ CREATE TABLE `imgclient` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `migrations`
+-- Cấu trúc bảng cho bảng `jobs`
+--
+
+CREATE TABLE `jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `attempts` tinyint(3) UNSIGNED NOT NULL,
+  `reserved_at` int(10) UNSIGNED DEFAULT NULL,
+  `available_at` int(10) UNSIGNED NOT NULL,
+  `created_at` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `migrations`
 --
 
 CREATE TABLE `migrations` (
@@ -92,18 +148,19 @@ CREATE TABLE `migrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `migrations`
+-- Đang đổ dữ liệu cho bảng `migrations`
 --
 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (1, '2014_10_12_000000_create_users_table', 1),
 (2, '2014_10_12_100000_create_password_resets_table', 1),
-(3, '2019_08_19_000000_create_failed_jobs_table', 1);
+(4, '2022_11_26_081906_create_jobs_table', 2),
+(5, '2019_08_19_000000_create_failed_jobs_table', 3);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `password_resets`
+-- Cấu trúc bảng cho bảng `password_resets`
 --
 
 CREATE TABLE `password_resets` (
@@ -115,7 +172,7 @@ CREATE TABLE `password_resets` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Cấu trúc bảng cho bảng `users`
 --
 
 CREATE TABLE `users` (
@@ -125,24 +182,28 @@ CREATE TABLE `users` (
   `phone` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` int(11) NOT NULL,
+  `current_upload` int(11) DEFAULT 0,
+  `limit_upload` int(11) DEFAULT 0,
   `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `users`
+-- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `phone`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'admin@gmail.com', '99999999999', NULL, '$2y$10$VeHu9MgmIKV5xfb188j2i./wThX0s9pmKU2c/f.We57rNoT4MjdpG', 'Admin', NULL, '2022-11-21 03:45:44', '2022-11-21 03:45:44'),
-(7, 'hieu', 'huple84@gmail.com', '945653718', NULL, '$2y$10$wMEVHsaGy3oceYYAXbuIO.D9QgpMry2XZE5QNDq9DuA5wboGmABku', 'user', NULL, '2022-11-24 04:03:12', '2022-11-24 04:03:12');
+INSERT INTO `users` (`id`, `name`, `email`, `phone`, `email_verified_at`, `password`, `role`, `current_upload`, `limit_upload`, `remember_token`, `created_at`, `updated_at`) VALUES
+(12, 'DUck', 'cuongnew27@gmail.com', '0976947354', NULL, '$2y$10$vminadd4KQKstLgY5lqlz.1mVFGsMA9vogf/qfE2iAOmMm1HOsD1q', 0, 0, 0, NULL, '2022-11-25 02:27:00', '2022-11-25 02:27:00'),
+(13, 'PTD', 'cuongnew37@gmail.com', '0976947354', NULL, '$2y$10$kCFMdoypZhYnIl0A5FODx.WaV5Gka6YHjjMIEkOFqm7GemRV/NBVu', 0, 0, 0, NULL, '2022-11-25 02:30:13', '2022-11-25 02:30:13'),
+(15, 'Nguyen Van A', 'user01@gmail.com', '123456789', NULL, '$2y$10$g9JxVNCcgaBdAnPIJR4BaOtHl7jirZJczbTxFtniHoj2QA1a9cv6C', 1, 0, 0, NULL, '2022-11-27 07:00:05', '2022-11-27 07:00:05'),
+(17, 'Nguyen Van A', 'nguyenvana@gmail.com', '09769473333', NULL, '$2y$10$ODxbylLlSz4cL89/dCFfYONKH7iYH3tVHDiAICsO4t1lAs8lkDebO', 1, 0, 0, NULL, '2022-11-27 11:39:10', '2022-11-27 11:39:10');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `verification_codes`
+-- Cấu trúc bảng cho bảng `verification_codes`
 --
 
 CREATE TABLE `verification_codes` (
@@ -155,7 +216,7 @@ CREATE TABLE `verification_codes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `verification_codes`
+-- Đang đổ dữ liệu cho bảng `verification_codes`
 --
 
 INSERT INTO `verification_codes` (`id`, `user_id`, `otp`, `expire_at`, `created_at`, `updated_at`) VALUES
@@ -187,100 +248,138 @@ INSERT INTO `verification_codes` (`id`, `user_id`, `otp`, `expire_at`, `created_
 (26, 7, '615546', '2022-11-24 19:15:34', '2022-11-24 19:15:30', '2022-11-24 19:15:34');
 
 --
--- Indexes for dumped tables
+-- Chỉ mục cho các bảng đã đổ
 --
 
 --
--- Indexes for table `failed_jobs`
+-- Chỉ mục cho bảng `checkout`
 --
-ALTER TABLE `failed_jobs`
+ALTER TABLE `checkout`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `img`
+-- Chỉ mục cho bảng `duck_image`
+--
+ALTER TABLE `duck_image`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Chỉ mục cho bảng `failed_jobs`
+--
+ALTER TABLE `failed_jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`);
+
+--
+-- Chỉ mục cho bảng `img`
 --
 ALTER TABLE `img`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `imgafter`
+-- Chỉ mục cho bảng `imgafter`
 --
 ALTER TABLE `imgafter`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `imgclient`
+-- Chỉ mục cho bảng `imgclient`
 --
 ALTER TABLE `imgclient`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `migrations`
+-- Chỉ mục cho bảng `jobs`
+--
+ALTER TABLE `jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `jobs_queue_index` (`queue`);
+
+--
+-- Chỉ mục cho bảng `migrations`
 --
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `password_resets`
+-- Chỉ mục cho bảng `password_resets`
 --
 ALTER TABLE `password_resets`
   ADD KEY `password_resets_email_index` (`email`);
 
 --
--- Indexes for table `users`
+-- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
--- Indexes for table `verification_codes`
+-- Chỉ mục cho bảng `verification_codes`
 --
 ALTER TABLE `verification_codes`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT cho các bảng đã đổ
 --
 
 --
--- AUTO_INCREMENT for table `failed_jobs`
+-- AUTO_INCREMENT cho bảng `checkout`
+--
+ALTER TABLE `checkout`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT cho bảng `duck_image`
+--
+ALTER TABLE `duck_image`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+
+--
+-- AUTO_INCREMENT cho bảng `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
--- AUTO_INCREMENT for table `img`
+-- AUTO_INCREMENT cho bảng `img`
 --
 ALTER TABLE `img`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=530;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=534;
 
 --
--- AUTO_INCREMENT for table `imgafter`
+-- AUTO_INCREMENT cho bảng `imgafter`
 --
 ALTER TABLE `imgafter`
   MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=172;
 
 --
--- AUTO_INCREMENT for table `imgclient`
+-- AUTO_INCREMENT cho bảng `imgclient`
 --
 ALTER TABLE `imgclient`
   MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
--- AUTO_INCREMENT for table `migrations`
+-- AUTO_INCREMENT cho bảng `jobs`
+--
+ALTER TABLE `jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
+
+--
+-- AUTO_INCREMENT cho bảng `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT for table `verification_codes`
+-- AUTO_INCREMENT cho bảng `verification_codes`
 --
 ALTER TABLE `verification_codes`
   MODIFY `id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
