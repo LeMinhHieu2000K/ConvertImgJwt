@@ -817,7 +817,7 @@ class ImgController extends Controller
             $date = getdate();
             $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
 
-            // create new namw
+            // create new name
             $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
             $diskImagePath = Auth::user()->id . "/" . $fileName;
             $newName = $only_name1 . '.' . $typeTarget;
