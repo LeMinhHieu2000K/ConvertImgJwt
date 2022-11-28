@@ -58,6 +58,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::get("profile", [UserController::class, "getProfile"]);
 
     Route::get("files", [UserController::class, "getMyFile"]);
+
+    Route::delete("files", [ImgController::class, "deleteAllFile"]);
     
     Route::get("logout", [UserController::class, "getLogout"]);
 

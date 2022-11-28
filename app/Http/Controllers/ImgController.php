@@ -709,7 +709,7 @@ class ImgController extends Controller
             $fileName = $file->name;
             $fileSize = $file->size;
             $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
-            $fileOriginName = basename($fileName);
+            $fileOriginName = explode('.',$fileName)[0];
 
             // download all file from Drive
             $file = $driveService->files->get($fileId, array(
@@ -750,6 +750,23 @@ class ImgController extends Controller
             "status" => 200,
             "message" => "Convert file successfully",
             "data" => $imageConvertedData
+        ], 200);
+    }
+
+    public function deleteAllFile(){
+        $userDir = public_path("source/convert/" . Auth::user()->id . "/");
+        $imageData =  DuckImage::where("user_id", Auth::user()->id)->get();
+
+        foreach ($imageData as $image){
+            if(file_exists($userDir . $image->name)){
+                unlink($userDir . $image->name);
+            }
+        }
+        DuckImage::where("user_id", Auth::user()->id)->delete();
+
+        return response()->json([
+            "status" => 200,
+            "message" => "Image(s) Delete successfully"
         ], 200);
     }
 }
