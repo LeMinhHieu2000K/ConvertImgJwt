@@ -753,20 +753,28 @@ class ImgController extends Controller
         ], 200);
     }
 
+    // Xóa toàn bộ ảnh của người dùng hiện tại
     public function deleteAllFile(){
         $userDir = public_path("source/convert/" . Auth::user()->id . "/");
         $imageData =  DuckImage::where("user_id", Auth::user()->id)->get();
 
-        foreach ($imageData as $image){
-            if(file_exists($userDir . $image->name)){
-                unlink($userDir . $image->name);
+        if(count($imageData) != 0){
+            foreach ($imageData as $image){
+                if(file_exists($userDir . $image->name)){
+                    unlink($userDir . $image->name);
+                }
             }
-        }
-        DuckImage::where("user_id", Auth::user()->id)->delete();
+            DuckImage::where("user_id", Auth::user()->id)->delete();
 
-        return response()->json([
-            "status" => 200,
-            "message" => "Image(s) Delete successfully"
-        ], 200);
+            return response()->json([
+                "status" => 200,
+                "message" => "Image(s) Delete successfully"
+            ], 200);
+        } else{
+            return response()->json([
+                "status" => 203,
+                "message" => "No Image(s) found"
+            ], 203);
+        }
     }
 }
