@@ -51,7 +51,7 @@ class UserController extends Controller
     }
 
     // Danh sách ảnh
-    public function getmyFile()
+    public function getMyFile()
     {
         $duckImage = DuckImage::where('user_id', Auth::user()->id)->get();
         return response()->json([

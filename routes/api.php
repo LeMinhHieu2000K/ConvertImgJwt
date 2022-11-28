@@ -57,7 +57,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::get("profile", [UserController::class, "getProfile"]);
 
-    Route::get("files", [UserController::class, "getmyFile"]);
+    Route::get("files", [UserController::class, "getMyFile"]);
     
     Route::get("logout", [UserController::class, "getLogout"]);
 
