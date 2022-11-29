@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Token;
 use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
@@ -53,6 +54,13 @@ class JwtMiddleware extends BaseMiddleware
             return abort(response()->json([
                 "status" => 403,
                 "message" => "api.token_error"
+            ], 403));
+        }
+
+        if(!Token::where('token', request()->bearerToken())->exists()){
+            return abort(response()->json([
+                "status" => 403,
+                "message" => "Exceed limit login attempts"
             ], 403));
         }
 

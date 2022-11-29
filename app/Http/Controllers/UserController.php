@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DuckImage;
 use App\Models\User;
 use App\Jobs\CreateUserFolder;
+use App\Models\Token;
 
 class UserController extends Controller
 {
@@ -78,6 +79,20 @@ class UserController extends Controller
                 "message" => "Invalid credentials"
             ], 403);
         }
+
+        $user = User::where('email', $request->email)->first();
+        $tokens = Token::where('user_id', $user->id)->get();
+
+        // delete the oldest token if tokens greater than 2
+        if($tokens->count() >= 2){
+            $tokens->first()->delete();
+        }
+
+        // save new token to db
+        $tokenData = new Token;
+        $tokenData->user_id = $user->id;
+        $tokenData->token = $token;
+        $tokenData->save();
 
         // send response
         return response()->json([
