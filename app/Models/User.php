@@ -53,6 +53,10 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'hst' => md5(gethostname()),
+            'ipa' => md5(request()->ip()),
+            'ura' => md5(request()->userAgent())
+        ];
     }
 }
