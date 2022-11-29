@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\File;
 use App\Models\DuckImage;
 use App\Models\User;
+use App\Jobs\CreateUserFolder;
 
 class UserController extends Controller
 {
@@ -17,7 +18,7 @@ class UserController extends Controller
             "name" => "required",
             "email" => "required|email|unique:users",
             "phone" => "required",
-            "password" => "required|confirmed|min:6",
+            "password" => "required|confirmed|min:10|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/",
             "role" => "required|integer"
         ]);
 
@@ -41,8 +42,8 @@ class UserController extends Controller
         //     }
         // );
 
-        $path = public_path().'/source/convert/' . $user->id;
-        File::makeDirectory($path, 0777, true, true);
+        // create user folder
+        CreateUserFolder::dispatch($user->id);
 
         return response()->json([
             "status" => 201,
