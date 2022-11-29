@@ -19,7 +19,7 @@ class UserController extends Controller
             "email" => "required|email|unique:users",
             "phone" => "required",
             "password" => "required|confirmed|min:10|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/",
-            "role" => "required|integer"
+            "company" => "required"
         ]);
 
         $user = new User();
@@ -27,7 +27,7 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->password = bcrypt($request->password);
-        $user->role = $request->role;
+        $user->company = $request->company;
         $user->save();
 
         // $emailTarget = $request->email; // email thằng nhận
