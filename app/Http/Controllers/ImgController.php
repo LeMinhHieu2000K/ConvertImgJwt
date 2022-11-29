@@ -355,4 +355,54 @@ class ImgController extends Controller
             ], 203);
         }
     }
+
+    // Tạo thumbnail
+    public function createThumbnail(Request $request){
+        $request->validate([
+            "size" => "required|integer" // 0 - small | 1 - medium | 2 - large
+        ]);
+
+        if ($request->hasFile('files')) {
+            // get input data
+            $file = $request->file('files')[0];
+            $extension = $file->getClientOriginalExtension();
+            $size = $request->size;
+            $randomString = Str::random(10);
+
+            $imagePath = "source/thumbnail/" . Auth::user()->company . "_" . $randomString . "_" . "thumbnail" . "." . $extension;
+
+            // create image
+            $img = Image::make($file->path());
+
+            // create thumbnail
+            switch ($size) {
+                case 1: // 1 - medium
+                    $img->resize(300, 185, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                  break;
+                case 2: // 2 - large
+                    $img->resize(550, 340, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                  break;
+                default: // 0 - small
+                $img->resize(150, 93, function ($constraint) {
+                    $constraint->aspectRatio();
+                });
+              }
+            $img->save($imagePath);
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Resize image successfully",
+                "data" => $_SERVER['APP_URL'] . "/" . $imagePath
+            ], 200);
+        } else {
+            return response()->json([
+                "status" => 406,
+                "message" => "Cannot find File uploaded"
+            ], 406);
+        }
+    }
 }
