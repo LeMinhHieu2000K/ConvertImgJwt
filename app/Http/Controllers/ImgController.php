@@ -395,7 +395,44 @@ class ImgController extends Controller
 
             return response()->json([
                 "status" => 200,
-                "message" => "Resize image successfully",
+                "message" => "Create thumbnail successfully",
+                "data" => $_SERVER['APP_URL'] . "/" . $imagePath
+            ], 200);
+        } else {
+            return response()->json([
+                "status" => 406,
+                "message" => "Cannot find File uploaded"
+            ], 406);
+        }
+    }
+
+    // Tạo banner
+    public function createBanner(Request $request){
+        $request->validate([
+            "width" => "required|integer",
+            "height" => "required|integer"
+        ]);
+
+        if ($request->hasFile('files')) {
+            // get input data
+            $file = $request->file('files')[0];
+            $extension = $file->getClientOriginalExtension();
+            $width = $request->width;
+            $height = $request->height;
+            $randomString = Str::random(10);
+
+            $imagePath = "source/banner/" . Auth::user()->company . "_" . $randomString . "_" . "banner" . "." . $extension;
+
+            // create image
+            $img = Image::make($file->path());
+
+            // create banner
+            $img->crop($width, $height);
+            $img->save($imagePath);
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Create banner image successfully",
                 "data" => $_SERVER['APP_URL'] . "/" . $imagePath
             ], 200);
         } else {

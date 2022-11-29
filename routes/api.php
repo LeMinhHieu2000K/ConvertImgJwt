@@ -40,6 +40,8 @@ Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::post('thumbnail', [ImgController::class, "createThumbnail"]);
 
+    Route::post('banner', [ImgController::class, "createBanner"]);
+
     Route::post('download', [ImgController::class, "downloadImage"]);
 
     Route::post('checkout', [CheckoutController::class, "createCheckout"]);
