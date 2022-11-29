@@ -27,30 +27,29 @@ class ImgController extends Controller
             $files = $request->file('files');
             $typeTarget = $request->typeImage;
 
-            if(count($files) == count($typeTarget)){
+            if (count($files) == count($typeTarget)) {
                 $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
 
                 // get current date
                 $date = getdate();
                 $dateFormat = $date['mday'] . $date['mon'] . $date['year'];
-    
+
                 for ($i = 0; $i < count($files); $i++) {
                     // get image data
                     $fileName = $files[$i]->getClientOriginalName();
                     $extension = $files[$i]->getClientOriginalExtension();
                     $size = $files[$i]->getSize();
-    
+
                     // save image to disk
                     $img = Image::make($files[$i]->getRealPath());
                     $img->stream();
                     $diskImagePath = Auth::user()->id . "/" . $fileName;
                     Storage::disk('local')->put(Auth::user()->id . "/" . $fileName, $img, 'public');
-    
+
                     // create new image name
-                    $fileOriginName = basename($fileName, '.' . $extension);
-                    $only_name1 = $fileOriginName . '_' . $dateFormat . '_' . Str::random(7);
+                    $only_name1 = Auth::user()->company . '_' . $dateFormat . '_' . Str::random(7);
                     $newName = $only_name1 . '.' . $typeTarget[$i];
-    
+
                     // save to table
                     $duckImage = new DuckImage();
                     $duckImage->name = $newName;
@@ -58,28 +57,29 @@ class ImgController extends Controller
                     $duckImage->size_before = $size;
                     $duckImage->save();
 
+                    // create response data
                     $responseData = new DuckImage();
                     $responseData->id = $duckImage->id;
                     $responseData->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
                     $responseData->size_before = $size;
-    
+
                     // start convert image
                     ProcessConvertImage::dispatch($typeTarget[$i], $target_dir, $only_name1, $diskImagePath, $duckImage->id);
-    
+
                     array_push($imageConvertedData, $responseData);
                 }
-    
+
                 return response()->json([
                     "status" => 200,
                     "message" => "Data Image(s) converted successfully",
                     "data" => $imageConvertedData
                 ], 200);
-            } else{
+            } else {
                 return response()->json([
                     "status" => 403,
                     "message" => "Files uploads and Type target must be equal"
                 ], 403);
-            } 
+            }
         } else {
             return response()->json([
                 "status" => 406,
@@ -164,7 +164,7 @@ class ImgController extends Controller
             $file->move(public_path('source/remove-background'), $randomString . "." . $extension);
 
             $imagePath = "source/remove-background/" . $randomString . "." . $extension;
-            $imageRemovedBackgroundPath = "source/remove-background/" . $randomString . "_" .  "remove_bg" . "." . $extension;
+            $imageRemovedBackgroundPath = "source/remove-background/" . Auth::user()->company . "_" . $randomString . "_" .  "remove_bg" . "." . $extension;
 
             $client = new \GuzzleHttp\Client;
             $res = $client->post('https://api.remove.bg/v1.0/removebg', [
@@ -182,7 +182,7 @@ class ImgController extends Controller
                     'X-Api-Key' => env("REMOVE_BG_API_KEY")
                 ]
             ]);
-            
+
             $fp = fopen($imageRemovedBackgroundPath, "wb");
             fwrite($fp, $res->getBody());
             fclose($fp);
@@ -192,7 +192,7 @@ class ImgController extends Controller
                 "message" => "Remove background successfully",
                 "data" => $_SERVER['APP_URL'] . "/" . $imageRemovedBackgroundPath
             ], 200);
-        } else{
+        } else {
             return response()->json([
                 "status" => 406,
                 "message" => "Cannot find File uploaded"
@@ -214,13 +214,13 @@ class ImgController extends Controller
             $percentage = $request->percentage;
             $randomString = Str::random(10);
 
-            $imagePath = "source/resize/" . $randomString . "_" . "resize" . "." . $extension;
+            $imagePath = "source/resize/" . Auth::user()->company . "_" . $randomString . "_" . "resize" . "." . $extension;
 
             // create image
             $img = Image::make($file->path());
 
             // resize image
-            $img->resize($img->width() * (1- $percentage / 100), $img->height() * (1 - $percentage / 100), function ($constraint) {
+            $img->resize($img->width() * (1 - $percentage / 100), $img->height() * (1 - $percentage / 100), function ($constraint) {
                 $constraint->aspectRatio();
             });
             $img->save($imagePath);
@@ -230,7 +230,7 @@ class ImgController extends Controller
                 "message" => "Resize image successfully",
                 "data" => $_SERVER['APP_URL'] . "/" . $imagePath
             ], 200);
-        } else{
+        } else {
             return response()->json([
                 "status" => 406,
                 "message" => "Cannot find File uploaded"
@@ -239,7 +239,8 @@ class ImgController extends Controller
     }
 
     // Lấy toàn bộ ảnh từ Google Drive
-    public function getGoogleDriveFile(){
+    public function getGoogleDriveFile()
+    {
         $driveService = Storage::disk('google');
         $query = "'" . env("GOOGLE_DRIVE_FOLDER_ID") . "' in parents and trashed=false";
 
@@ -258,7 +259,8 @@ class ImgController extends Controller
     }
 
     // Convert ảnh từ Google Drive
-    public function convertGoogleDriveFile(Request $request){
+    public function convertGoogleDriveFile(Request $request)
+    {
         $request->validate([
             "typeImage" => "required"
         ]);
@@ -277,17 +279,18 @@ class ImgController extends Controller
 
         $imageConvertedData = []; // array image convert data
 
-        foreach($files as $file){
+        foreach ($files as $file) {
             // get image data
             $fileId = $file->id;
             $fileName = $file->name;
             $fileSize = $file->size;
             $target_dir = public_path("source/convert/" . Auth::user()->id . "/"); // đường dẫn lưu trữ ảnh đã convert
-            $fileOriginName = explode('.',$fileName)[0];
+            $fileOriginName = explode('.', $fileName)[0];
 
             // download all file from Drive
             $file = $driveService->files->get($fileId, array(
-                'alt' => 'media'));
+                'alt' => 'media'
+            ));
             $file =  $file->getBody()->getContents();
 
             // get current date
@@ -328,13 +331,14 @@ class ImgController extends Controller
     }
 
     // Xóa toàn bộ ảnh của người dùng hiện tại
-    public function deleteAllFile(){
+    public function deleteAllFile()
+    {
         $userDir = public_path("source/convert/" . Auth::user()->id . "/");
         $imageData =  DuckImage::where("user_id", Auth::user()->id)->get();
 
-        if(count($imageData) != 0){
-            foreach ($imageData as $image){
-                if(file_exists($userDir . $image->name)){
+        if (count($imageData) != 0) {
+            foreach ($imageData as $image) {
+                if (file_exists($userDir . $image->name)) {
                     unlink($userDir . $image->name);
                 }
             }
@@ -344,7 +348,7 @@ class ImgController extends Controller
                 "status" => 200,
                 "message" => "Image(s) Delete successfully"
             ], 200);
-        } else{
+        } else {
             return response()->json([
                 "status" => 203,
                 "message" => "No Image(s) found"
