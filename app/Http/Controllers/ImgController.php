@@ -37,7 +37,6 @@ class ImgController extends Controller
                 for ($i = 0; $i < count($files); $i++) {
                     // get image data
                     $fileName = $files[$i]->getClientOriginalName();
-                    $extension = $files[$i]->getClientOriginalExtension();
                     $size = $files[$i]->getSize();
 
                     // save image to disk

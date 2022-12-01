@@ -22,32 +22,37 @@ Route::post("login", [UserController::class, "postLogin"]);
 // branch duck
 Route::group(["middleware" => ["auth:api"]], function () {
     Route::group(["middleware" => ["jwt.verify"]], function () {
-        Route::get("profile", [UserController::class, "getProfile"]);
 
-        Route::get("files", [UserController::class, "getMyFile"]);
+        Route::post("otp", [UserController::class, "postOtp"]);
 
-        Route::delete("files", [ImgController::class, "deleteAllFile"]);
+        Route::group(["middleware" => ["otp.verify"]], function () {
+            Route::get("profile", [UserController::class, "getProfile"]);
 
-        Route::get("logout", [UserController::class, "getLogout"]);
+            Route::get("files", [UserController::class, "getMyFile"]);
 
-        Route::get('image-data', [ImgController::class, "getImageData"]);
+            Route::delete("files", [ImgController::class, "deleteAllFile"]);
 
-        Route::post('convert', [ImgController::class, "convertImage"]);
+            Route::get("logout", [UserController::class, "getLogout"]);
 
-        Route::post('remove-background', [ImgController::class, "removeBackground"]);
+            Route::get('image-data', [ImgController::class, "getImageData"]);
 
-        Route::post('resize', [ImgController::class, "resizeImage"]);
+            Route::post('convert', [ImgController::class, "convertImage"]);
 
-        Route::post('thumbnail', [ImgController::class, "createThumbnail"]);
+            Route::post('remove-background', [ImgController::class, "removeBackground"]);
 
-        Route::post('banner', [ImgController::class, "createBanner"]);
+            Route::post('resize', [ImgController::class, "resizeImage"]);
 
-        Route::post('download', [ImgController::class, "downloadImage"]);
+            Route::post('thumbnail', [ImgController::class, "createThumbnail"]);
 
-        Route::post('checkout', [CheckoutController::class, "createCheckout"]);
+            Route::post('banner', [ImgController::class, "createBanner"]);
 
-        Route::get("driver", [ImgController::class, "getGoogleDriveFile"]);
+            Route::post('download', [ImgController::class, "downloadImage"]);
 
-        Route::post("driver", [ImgController::class, "convertGoogleDriveFile"]);
+            Route::post('checkout', [CheckoutController::class, "createCheckout"]);
+
+            Route::get("driver", [ImgController::class, "getGoogleDriveFile"]);
+
+            Route::post("driver", [ImgController::class, "convertGoogleDriveFile"]);
+        });
     });
 });

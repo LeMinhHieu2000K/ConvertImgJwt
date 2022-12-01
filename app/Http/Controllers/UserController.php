@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DuckImage;
 use App\Models\User;
 use App\Jobs\CreateUserFolder;
 use App\Models\Token;
+use App\Jobs\SendOtpMail;
 
 class UserController extends Controller
 {
@@ -29,18 +31,6 @@ class UserController extends Controller
         $user->password = bcrypt($request->password);
         $user->company = $request->company;
         $user->save();
-
-        // $emailTarget = $request->email; // email thằng nhận
-
-        // gửi email thông báo đăng ký thành công
-        // Mail::send(
-        //     'testMail',
-        //     ['name' => $request->name, 'email' => $request->email, 'password' => $request->password],
-        //     function ($email) use ($emailTarget) { // phải dùng phương thức use mới dùng được biến $emailTarget
-        //         $email->subject('Chúc mừng bạn đã đăng ký thành công');
-        //         $email->to($emailTarget);
-        //     }
-        // );
 
         // create user folder
         CreateUserFolder::dispatch($user->id);
@@ -84,7 +74,7 @@ class UserController extends Controller
         $tokens = Token::where('user_id', $user->id)->get();
 
         // delete the oldest token if tokens greater than 2
-        if($tokens->count() >= 2){
+        if ($tokens->count() >= 2) {
             $tokens->first()->delete();
         }
 
@@ -92,13 +82,51 @@ class UserController extends Controller
         $tokenData = new Token;
         $tokenData->user_id = $user->id;
         $tokenData->token = $token;
+        $tokenData->otp = rand(123456, 999999);
+        $tokenData->expire_at = Carbon::now()->addMinutes(10);
         $tokenData->save();
+
+        // send otp via email
+        SendOtpMail::dispatch($user->name, $user->email, $tokenData->otp);
 
         // send response
         return response()->json([
             "status" => 200,
-            "message" => "Logged in successfully",
+            "message" => "Please check mail to get otp code",
             "access_token" => $token
+        ], 200);
+    }
+
+    public function postOtp(Request $request)
+    {
+        // Validation
+        $request->validate([
+            'otp' => 'required'
+        ]);
+
+        $verificationCode  = Token::where('user_id', Auth::user()->id)->where('otp', $request->otp)->where('token', request()->bearerToken())->first();
+
+        $now = Carbon::now();
+        if (!$verificationCode) {
+            return response()->json([
+                "status" => 404,
+                "message" => "Your OTP is not correct"
+            ], 404);
+        } elseif ($verificationCode && $now->isAfter($verificationCode->expire_at)) {
+            return response()->json([
+                "status" => 404,
+                "message" => "Your OTP has been expired"
+            ], 404);
+        }
+
+        // Expire The OTP
+        $verificationCode->expire_at = Carbon::now();
+        $verificationCode->verify = 1;
+        $verificationCode->save();
+
+        return response()->json([
+            "status" => 200,
+            "message" => "Login success"
         ], 200);
     }
 
