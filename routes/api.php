@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
+Route::group(["middleware" => ["cors"]], function () {
 Route::post("register", [UserController::class, "postRegister"]);
 
 Route::post("login", [UserController::class, "postLogin"]);
@@ -55,4 +55,5 @@ Route::group(["middleware" => ["auth:api"]], function () {
             Route::post("driver", [ImgController::class, "convertGoogleDriveFile"]);
         });
     });
+});
 });
