@@ -59,8 +59,8 @@ class ImgController extends Controller
                     // create response data
                     $responseData = new DuckImage();
                     $responseData->id = $duckImage->id;
-                    $responseData->name = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
-                    $responseData->size_before = $size;
+                    $responseData->name = $newName;
+                    $responseData->url = $_SERVER['APP_URL'] . "/source/convert/" . Auth::user()->id . "/" . $newName;
 
                     // start convert image
                     ProcessConvertImage::dispatch($typeTarget[$i], $target_dir, $only_name1, $diskImagePath, $duckImage->id);
@@ -102,11 +102,7 @@ class ImgController extends Controller
                 $image = DuckImage::where('id', $imageIds[0])->first();
                 $imagePath = "source/convert/" . Auth::user()->id . "/" . $image->name;
 
-                return response()->json([
-                    "status" => 200,
-                    "message" => "Download successfully",
-                    "data" => $_SERVER['APP_URL'] . "/" . $imagePath
-                ], 200);
+                return response()->download($imagePath,$image->name);
             } else {
                 return response()->json([
                     "status" => 404,
